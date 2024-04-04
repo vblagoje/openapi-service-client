@@ -1,0 +1,74 @@
+import json
+from test.conftest import FastAPITestClient
+
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
+from openapi_service_client import OpenAPIServiceClient
+
+
+class Customer(BaseModel):
+    name: str
+    email: str
+
+
+class OrderItem(BaseModel):
+    product: str
+    quantity: int
+
+
+class Order(BaseModel):
+    customer: Customer
+    items: list[OrderItem]
+
+
+class OrderResponse(BaseModel):
+    orderId: str
+    status: str
+    totalAmount: float
+
+
+def create_order_app() -> FastAPI:
+    app = FastAPI()
+
+    @app.post("/orders")
+    def create_order(order: Order):
+        total_amount = sum(item.quantity * 10 for item in order.items)
+        response = OrderResponse(
+            orderId="ORDER-001",
+            status="CREATED",
+            totalAmount=total_amount,
+        )
+        return JSONResponse(content=response.dict(), status_code=201)
+
+    return app
+
+
+class TestComplexRequestBody:
+    def test_create_order(self, test_files_path):
+        client = OpenAPIServiceClient(
+            test_files_path / "openapi_order_service.yml",
+            FastAPITestClient(create_order_app()),
+        )
+        order_json = {
+            "customer": {"name": "John Doe", "email": "john@example.com"},
+            "items": [
+                {"product": "Product A", "quantity": 2},
+                {"product": "Product B", "quantity": 1},
+            ],
+        }
+        payload = {
+            "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
+            "function": {
+                "arguments": json.dumps(order_json),
+                "name": "createOrder",
+            },
+            "type": "function",
+        }
+        response = client.invoke(payload)
+        assert response == {
+            "orderId": "ORDER-001",
+            "status": "CREATED",
+            "totalAmount": 30,
+        }
