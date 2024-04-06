@@ -31,7 +31,7 @@ class RequestsHttpClient(AbstractHttpClient):
 
     def _initialize_session(self) -> None:
         self.session.headers.update(self.config.default_headers)
-        # TODO set session configurations based on the HttpClientConfig
+        # set session configurations based on the HttpClientConfig
 
     def send_request(self, request: Dict[str, Any]) -> Any:
         url = request["url"]
@@ -49,10 +49,10 @@ class RequestsHttpClient(AbstractHttpClient):
             return response.json()
         except requests.exceptions.HTTPError as e:
             # Handle HTTP errors
-            raise HttpClientError(f"HTTP error occurred: {e}")
+            raise HttpClientError(f"HTTP error occurred: {e}") from e
         except requests.exceptions.RequestException as e:
             # Handle other request exceptions
-            raise HttpClientError(f"An error occurred: {e}")
+            raise HttpClientError(f"HTTP error occurred: {e}") from e
 
 
 class HttpClientError(Exception):

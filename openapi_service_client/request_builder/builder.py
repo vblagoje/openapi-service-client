@@ -85,8 +85,7 @@ class RequestBuilder:
             content = request_body.get("content", {})
             if "application/json" in content:
                 return {**kwargs}
-            else:
-                raise NotImplementedError("Request body content type not supported")
+            raise NotImplementedError("Request body content type not supported")
 
         return None
 
