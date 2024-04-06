@@ -1,5 +1,7 @@
+import json
 import logging
-from typing import Any, Dict, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -14,10 +16,29 @@ class OpenAPISpecification:
         self.spec_dict = spec_dict
 
     @classmethod
-    def from_file(cls, spec_file: str) -> "OpenAPISpecification":
-        with open(spec_file, "r") as file:
-            loaded_spec = yaml.safe_load(file)
-            return cls(loaded_spec)
+    def from_dict(cls, spec_dict: Dict[str, Any]) -> "OpenAPISpecification":
+        parser = cls({})
+        parser.spec_dict = spec_dict
+        return parser
+
+    @classmethod
+    def from_file(cls, spec_file: Union[str, Path]) -> "OpenAPISpecification":
+        loaded_spec: Dict[str, Any]
+        with open(spec_file, "r", encoding="utf-8") as file:
+            content = file.read()
+        try:
+            # Try to load as JSON
+            loaded_spec = json.loads(content)
+        except json.JSONDecodeError:
+            # If JSON fails, attempt to load as YAML
+            try:
+                loaded_spec = yaml.safe_load(content)
+            except yaml.YAMLError as e:
+                raise ValueError(
+                    "File cannot be decoded as JSON or YAML: " + str(e)
+                ) from e
+
+        return cls(loaded_spec)
 
     def get_paths(self) -> Dict[str, Dict[str, Any]]:
         return self.spec_dict.get("paths", {})
@@ -53,19 +74,17 @@ class OpenAPISpecification:
                     f"No operation found for method {method} at path {path}"
                 )
             return Operation(path, method.lower(), operation_dict, self.spec_dict)
-        else:
-            # If method is not specified, check the number of operations under
-            # the path.
-            if len(path_item) == 1:
-                # Only one operation exists, return it.
-                method, operation_dict = next(iter(path_item.items()))
-                return Operation(path, method, operation_dict, self.spec_dict)
-            elif len(path_item) > 1:
-                raise ValueError(
-                    f"Multiple operations found at path {path}, method parameter is required."
-                )
-            else:
-                raise ValueError(f"No operations found at path {path}.")
+        # If method is not specified, check the number of operations under
+        # the path.
+        if len(path_item) == 1:
+            # Only one operation exists, return it.
+            method, operation_dict = next(iter(path_item.items()))
+            return Operation(path, method, operation_dict, self.spec_dict)
+        if len(path_item) > 1:
+            raise ValueError(
+                f"Multiple operations found at path {path}, method parameter is required."
+            )
+        raise ValueError(f"No operations found at path {path}.")
 
     def get_operations(self) -> List[Operation]:
         operations = []
@@ -75,18 +94,8 @@ class OpenAPISpecification:
                     operations.append(
                         Operation(path, method, operation_dict, self.spec_dict)
                     )
-                else:
-                    logger.warning(
-                        f"Skipping operation with invalid HTTP method: {method}"
-                    )
         return operations
 
     def get_security_schemes(self) -> Dict[str, Dict[str, Any]]:
         components = self.spec_dict.get("components", {})
         return components.get("securitySchemes", {})
-
-    @classmethod
-    def from_dict(cls, spec_dict: Dict[str, Any]) -> "OpenAPISpecification":
-        parser = cls({})
-        parser.spec_dict = spec_dict
-        return parser

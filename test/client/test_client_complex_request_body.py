@@ -1,6 +1,8 @@
 import json
 from typing import List
 
+import pytest
+
 from test.conftest import FastAPITestClient
 
 from fastapi import FastAPI
@@ -48,9 +50,11 @@ def create_order_app() -> FastAPI:
 
 
 class TestComplexRequestBody:
-    def test_create_order(self, test_files_path):
+
+    @pytest.mark.parametrize("spec_file_path", ["openapi_order_service.yml", "openapi_order_service.json"])
+    def test_create_order(self, spec_file_path, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_order_service.yml",
+            test_files_path / spec_file_path,
             FastAPITestClient(create_order_app()),
         )
         order_json = {
