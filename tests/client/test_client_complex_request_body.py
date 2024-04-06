@@ -2,14 +2,12 @@ import json
 from typing import List
 
 import pytest
-
-from test.conftest import FastAPITestClient
-
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from openapi_service_client import OpenAPIServiceClient
+from src.openapi_service_client import OpenAPIServiceClient
+from tests.conftest import FastAPITestClient
 
 
 class Customer(BaseModel):
@@ -28,9 +26,9 @@ class Order(BaseModel):
 
 
 class OrderResponse(BaseModel):
-    orderId: str
+    orderId: str  # noqa: N815
     status: str
-    totalAmount: float
+    totalAmount: float  # noqa: N815
 
 
 def create_order_app() -> FastAPI:

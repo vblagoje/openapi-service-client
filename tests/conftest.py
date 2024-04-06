@@ -5,7 +5,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from openapi_service_client.http_client import AbstractHttpClient, HttpClientError
+from src.openapi_service_client.http_client import AbstractHttpClient, HttpClientError
 
 
 @pytest.fixture()
@@ -51,4 +51,4 @@ class FastAPITestClient(AbstractHttpClient):
             return response.json()
         except Exception as e:
             # Handle HTTP errors
-            raise HttpClientError(f"HTTP error occurred: {str(e)}")
+            raise HttpClientError(f"HTTP error occurred: {e}") from e

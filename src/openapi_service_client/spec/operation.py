@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional
 
-from openapi_service_client.http_client import VALID_HTTP_METHODS
+from src.openapi_service_client.http_client import VALID_HTTP_METHODS
 
 
 class Operation:
@@ -19,9 +19,7 @@ class Operation:
         self.operation_dict = operation_dict
         self.spec_dict = spec_dict
 
-    def get_parameters(
-        self, location: Optional[Literal["header", "query", "path"]] = None
-    ) -> List[Dict[str, Any]]:
+    def get_parameters(self, location: Optional[Literal["header", "query", "path"]] = None) -> List[Dict[str, Any]]:
         parameters = self.operation_dict.get("parameters", [])
         path_item = self.spec_dict.get("paths", {}).get(self.path, {})
         parameters.extend(path_item.get("parameters", []))

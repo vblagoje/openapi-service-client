@@ -1,21 +1,20 @@
-from test.conftest import FastAPITestClient
-
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from openapi_service_client import OpenAPIServiceClient
+from src.openapi_service_client import OpenAPIServiceClient
+from tests.conftest import FastAPITestClient
 
 """
 Tests OpenAPIServiceClient with three FastAPI apps for different parameter types:
 
-- **greet_mix_params_body**: A POST endpoint `/greet/<name>` accepting a JSON payload with a message, returning a 
+- **greet_mix_params_body**: A POST endpoint `/greet/<name>` accepting a JSON payload with a message, returning a
 greeting with the name from the URL and the message from the payload.
 
-- **greet_params_only**: A GET endpoint `/greet-params/<name>` taking a URL parameter, returning a greeting with 
+- **greet_params_only**: A GET endpoint `/greet-params/<name>` taking a URL parameter, returning a greeting with
 the name from the URL.
 
-- **greet_request_body_only**: A POST endpoint `/greet-body` accepting a JSON payload with a name and message, 
+- **greet_request_body_only**: A POST endpoint `/greet-body` accepting a JSON payload with a name and message,
 returning a greeting with both.
 
 OpenAPI specs for these endpoints are in `openapi_greeting_service.yml` in `test/test_files` directory.

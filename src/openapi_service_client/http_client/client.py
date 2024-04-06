@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from openapi_service_client.config.configuration import HttpClientConfig
+from src.openapi_service_client.config.configuration import HttpClientConfig
 
 VALID_HTTP_METHODS = [
     "get",
@@ -42,9 +42,7 @@ class RequestsHttpClient(AbstractHttpClient):
         auth = request.get("auth", None)
 
         try:
-            response = self.session.request(
-                method, url, headers=headers, params=params, json=json_data, auth=auth
-            )
+            response = self.session.request(method, url, headers=headers, params=params, json=json_data, auth=auth)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:

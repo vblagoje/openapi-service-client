@@ -1,36 +1,186 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
-name = "openapi_service_client"
-version = "0.1.0"
+name = "openapi-service-client"
+dynamic = ["version"]
+#packages = [{include = "openapi_service_client", from = "src"}]
 description = "A client library for invoking APIs based on provided OpenAPI specifications"
-authors = [{name = "Vladimir Blagojevic", email = "dovlex@gmail.com"}]
+readme = "README.md"
+requires-python = ">=3.8"
+license = "Apache-2.0"
+keywords = []
+authors = [
+  { name = "Vladimir Blagojevic", email = "dovlex@gmail.com" },
+]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-    "pyyaml",
-    "requests",
-    "pydantic",
-    "pydantic-settings",
+  "pyyaml",
+  "requests",
+  "pydantic",
+  "pydantic-settings",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pylint",
-    "mypy",
-    "pytest",
-    "black",
-    "isort",
-    "httpx",
-    "fastapi",
+[project.urls]
+Documentation = "https://github.com/vblagoje/openapi-service-client/blob/main/README.md"
+Issues = "https://github.com/vblagoje/openapi-service-client/issues"
+Source = "https://github.com/vblagoje/openapi-service-client"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "httpx",
+  "fastapi",
+  "coverage[toml]>=6.5",
+  "pytest",
+]
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+  "- coverage combine",
+  "coverage report",
+]
+cov = [
+  "test-cov",
+  "cov-report",
+]
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.lint]
+detached = true
+dependencies = [
+  "black>=23.1.0",
+  "mypy>=1.0.0",
+  "ruff>=0.0.243",
+]
+[tool.hatch.envs.lint.scripts]
+typing = "mypy --install-types --non-interactive {args:src/openapi_service_client}"
+style = [
+  "ruff check {args:.}",
+  "black --check --diff {args:.}",
+]
+fmt = [
+  "black {args:.}",
+  "ruff check {args:.}",
+  "style",
+]
+all = [
+  "style",
+  "typing",
+]
+
+[tool.black]
+target-version = ["py37"]
+line-length = 120
+skip-string-normalization = true
+
+[[tool.mypy.overrides]]
+module = "pydantic"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "openapi_service_client.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fastapi.*"
+ignore_missing_imports = true
+
+
+
+[[tool.mypy.overrides]]
+module = "pydantic_settings"
+ignore_missing_imports = true
+
+[tool.mypy]
+namespace_packages = true
+explicit_package_bases = true
+
+[tool.ruff]
+target-version = "py37"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+  "A",
+  "ARG",
+  "B",
+  "C",
+  "DTZ",
+  "E",
+  "EM",
+  "F",
+  "FBT",
+  "I",
+  "ICN",
+  "ISC",
+  "N",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "Q",
+  "RUF",
+  "S",
+  "T",
+  "TID",
+  "UP",
+  "W",
+  "YTT",
+]
+ignore = [
+  # Allow non-abstract empty methods in abstract base classes
+  "B027",
+  # Allow boolean positional values in function calls, like `dict.get(... True)`
+  "FBT003",
+  # Ignore checks for possible passwords
+  "S105", "S106", "S107",
+  # Ignore complexity
+  "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+  # Exceptions and string literals
+  "EM101", "EM102",
+]
+unfixable = [
+  # Don't touch unused imports
+  "F401",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["openapi_service_client"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
+
+[tool.coverage.run]
+source_pkgs = ["openapi_service_client", "tests"]
+branch = true
+parallel = true
+omit = []
+
+[tool.coverage.paths]
+openapi_service_client = ["src/openapi_service_client", "*/openapi_service_client/src/openapi_service_client"]
+tests = ["tests", "*/openapi_service_client/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
 ]

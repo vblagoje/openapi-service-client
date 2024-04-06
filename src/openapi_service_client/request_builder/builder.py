@@ -1,11 +1,11 @@
 from typing import Any, Dict, Optional
 
-from openapi_service_client.config import (
+from src.openapi_service_client.config import (
     AuthenticationStrategy,
     PassThroughAuthentication,
 )
-from openapi_service_client.http_client.client import AbstractHttpClient
-from openapi_service_client.spec import OpenAPISpecification, Operation
+from src.openapi_service_client.http_client.client import AbstractHttpClient
+from src.openapi_service_client.spec import OpenAPISpecification, Operation
 
 
 class RequestBuilder:
@@ -44,9 +44,7 @@ class RequestBuilder:
             if param_value:
                 headers[parameter["name"]] = str(param_value)
             elif parameter.get("required", False):
-                raise ValueError(
-                    f"Missing required header parameter: {parameter['name']}"
-                )
+                raise ValueError(f"Missing required header parameter: {parameter['name']}")
         return headers
 
     def _build_url(self, operation: Operation, **kwargs) -> str:
@@ -58,9 +56,7 @@ class RequestBuilder:
             if param_value:
                 path = path.replace(f"{{{parameter['name']}}}", str(param_value))
             elif parameter.get("required", False):
-                raise ValueError(
-                    f"Missing required path parameter: {parameter['name']}"
-                )
+                raise ValueError(f"Missing required path parameter: {parameter['name']}")
 
         return server_url + path
 
@@ -73,9 +69,7 @@ class RequestBuilder:
             if param_value:
                 query_params[parameter["name"]] = param_value
             elif parameter.get("required", False):
-                raise ValueError(
-                    f"Missing required query parameter: {parameter['name']}"
-                )
+                raise ValueError(f"Missing required query parameter: {parameter['name']}")
         return query_params
 
     def _build_request_body(self, operation: Operation, **kwargs) -> Any:
@@ -95,9 +89,7 @@ class RequestBuilder:
         security_requirements = operation.get_security_requirements()
 
         # security schemes define how to authenticate (the "how")
-        security_schemes = operation.spec_dict.get("components", {}).get(
-            "securitySchemes", {}
-        )
+        security_schemes = operation.spec_dict.get("components", {}).get("securitySchemes", {})
 
         if security_requirements:
             for requirement in security_requirements:

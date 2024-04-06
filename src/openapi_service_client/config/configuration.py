@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-from .auth_strategy import AuthenticationStrategy
+from openapi_service_client.config import AuthenticationStrategy
 
 
 class ApiKeyAuthSettings(BaseSettings):
@@ -20,23 +20,15 @@ class ApiKeyAuthentication(AuthenticationStrategy):
             self.settings.api_key = api_key
 
         if self.settings.api_key is None:
-            raise ValueError(
-                "API key must be provided either via parameter or environment variable"
-            )
+            raise ValueError("API key must be provided either via parameter or environment variable")
 
     def apply_auth(self, security_scheme: Dict[str, Any], request: Dict[str, Any]):
         if security_scheme["in"] == "header":
-            request.setdefault("headers", {})[
-                security_scheme["name"]
-            ] = self.settings.api_key
+            request.setdefault("headers", {})[security_scheme["name"]] = self.settings.api_key
         elif security_scheme["in"] == "query":
-            request.setdefault("params", {})[
-                security_scheme["name"]
-            ] = self.settings.api_key
+            request.setdefault("params", {})[security_scheme["name"]] = self.settings.api_key
         elif security_scheme["in"] == "cookie":
-            request.setdefault("cookies", {})[
-                security_scheme["name"]
-            ] = self.settings.api_key
+            request.setdefault("cookies", {})[security_scheme["name"]] = self.settings.api_key
         else:
             raise ValueError(
                 f"Unsupported apiKey authentication location: {security_scheme['in']}, "
@@ -57,13 +49,9 @@ class HTTPAuthentication(AuthenticationStrategy):
         password: Optional[str] = None,
         token: Optional[str] = None,
     ):
-        self.settings = HTTPAuthSettings(
-            username=username, password=password, token=token
-        )
+        self.settings = HTTPAuthSettings(username=username, password=password, token=token)
 
-        if not self.settings.token and (
-            not self.settings.username or not self.settings.password
-        ):
+        if not self.settings.token and (not self.settings.username or not self.settings.password):
             raise ValueError(
                 "For HTTP Basic Auth, both username and password must be provided. "
                 "For Bearer Auth, a token must be provided."
@@ -73,30 +61,18 @@ class HTTPAuthentication(AuthenticationStrategy):
         if security_scheme["type"] == "http":
             if security_scheme["scheme"].lower() == "basic":
                 if not self.settings.username or not self.settings.password:
-                    raise ValueError(
-                        "Username and password must be provided for Basic Auth."
-                    )
+                    raise ValueError("Username and password must be provided for Basic Auth.")
                 credentials = f"{self.settings.username}:{self.settings.password}"
-                encoded_credentials = b64encode(credentials.encode("utf-8")).decode(
-                    "utf-8"
-                )
-                request.setdefault("headers", {})[
-                    "Authorization"
-                ] = f"Basic {encoded_credentials}"
+                encoded_credentials = b64encode(credentials.encode("utf-8")).decode("utf-8")
+                request.setdefault("headers", {})["Authorization"] = f"Basic {encoded_credentials}"
             elif security_scheme["scheme"].lower() == "bearer":
                 if not self.settings.token:
                     raise ValueError("Token must be provided for Bearer Auth.")
-                request.setdefault("headers", {})[
-                    "Authorization"
-                ] = f"Bearer {self.settings.token}"
+                request.setdefault("headers", {})["Authorization"] = f"Bearer {self.settings.token}"
             else:
-                raise ValueError(
-                    f"Unsupported HTTP authentication scheme: {security_scheme['scheme']}"
-                )
+                raise ValueError(f"Unsupported HTTP authentication scheme: {security_scheme['scheme']}")
         else:
-            raise ValueError(
-                "HTTPAuthentication strategy received a non-HTTP security scheme."
-            )
+            raise ValueError("HTTPAuthentication strategy received a non-HTTP security scheme.")
 
 
 class HttpClientConfig(BaseSettings):

@@ -1,4 +1,0 @@
-[DESIGN]
-min-public-methods=1
-[MESSAGES CONTROL]
-disable=missing-class-docstring,missing-function-docstring, missing-module-docstring

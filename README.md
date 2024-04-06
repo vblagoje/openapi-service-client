@@ -23,8 +23,8 @@ pip install openapi-service-client
 To use OpenAPI Service Client, you need to have an OpenAPI specification file (in YAML or JSON format) that describes the API you want to interact with. Here's an example of how to use the library:
 
 ```python
-from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.config import ApiKeyAuthentication
+from src.openapi_service_client import OpenAPIServiceClient
+from src.openapi_service_client.config import ApiKeyAuthentication
 
 api = OpenAPIServiceClient(
     openapi_spec="/path/to/weather_service.yml",

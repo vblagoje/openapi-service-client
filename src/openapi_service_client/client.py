@@ -3,14 +3,14 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-from openapi_service_client.config import AuthenticationStrategy
-from openapi_service_client.http_client import (
+from src.openapi_service_client.config import AuthenticationStrategy
+from src.openapi_service_client.http_client import (
     VALID_HTTP_METHODS,
     AbstractHttpClient,
     RequestsHttpClient,
 )
-from openapi_service_client.request_builder import RequestBuilder
-from openapi_service_client.spec import OpenAPISpecification, Operation
+from src.openapi_service_client.request_builder import RequestBuilder
+from src.openapi_service_client.spec import OpenAPISpecification, Operation
 
 
 class OpenAPIServiceClient:
@@ -25,14 +25,10 @@ class OpenAPIServiceClient:
         elif isinstance(openapi_spec, dict):
             self.openapi_spec = OpenAPISpecification.from_dict(openapi_spec)
         else:
-            raise ValueError(
-                "Invalid OpenAPI specification format. Expected file path or dictionary."
-            )
+            raise ValueError("Invalid OpenAPI specification format. Expected file path or dictionary.")
 
         self.http_client = http_client or RequestsHttpClient()
-        self.request_builder = RequestBuilder(
-            self.openapi_spec, self.http_client, auth_config=auth_config
-        )
+        self.request_builder = RequestBuilder(self.openapi_spec, self.http_client, auth_config=auth_config)
 
     def get_operations(self) -> Dict[str, Dict[str, Operation]]:
         operations: Dict[str, Dict[str, Operation]] = {}

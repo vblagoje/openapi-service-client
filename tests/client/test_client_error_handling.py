@@ -2,9 +2,10 @@ import json
 
 import pytest
 from fastapi import FastAPI, HTTPException
-from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.http_client import HttpClientError
-from test.conftest import FastAPITestClient
+
+from src.openapi_service_client import OpenAPIServiceClient
+from src.openapi_service_client.http_client import HttpClientError
+from tests.conftest import FastAPITestClient
 
 
 def create_error_handling_app() -> FastAPI:
@@ -36,4 +37,3 @@ class TestErrorHandling:
             client.invoke(payload)
 
         assert str(status_code) in str(exc_info.value)
-

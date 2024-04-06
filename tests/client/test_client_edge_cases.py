@@ -1,6 +1,7 @@
 import pytest
-from openapi_service_client import OpenAPIServiceClient
-from test.conftest import FastAPITestClient
+
+from src.openapi_service_client import OpenAPIServiceClient
+from tests.conftest import FastAPITestClient
 
 
 class TestEdgeCases:
