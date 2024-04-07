@@ -12,7 +12,7 @@ from fastapi.security import (
 
 from openapi_service_client import OpenAPIServiceClient
 from openapi_service_client.config import ApiKeyAuthentication
-from openapi_service_client.config.configuration import HTTPAuthentication
+from openapi_service_client.config.configuration import HTTPAuthentication, OAuthAuthentication
 from tests.conftest import FastAPITestClient
 
 API_KEY = "secret_api_key"
@@ -22,6 +22,8 @@ BASIC_AUTH_PASSWORD = "secret_password"
 API_KEY_QUERY = "secret_api_key_query"
 API_KEY_COOKIE = "secret_api_key_cookie"
 BEARER_TOKEN = "secret_bearer_token"
+
+OAUTH_TOKEN = "secret-oauth-token"
 
 api_key_query = APIKeyQuery(name="api_key")
 api_key_cookie = APIKeyCookie(name="api_key")
@@ -113,6 +115,22 @@ def create_greet_basic_auth_app() -> FastAPI:
     return app
 
 
+def create_greet_oauth_auth_app() -> FastAPI:
+    app = FastAPI()
+
+    def oauth_auth(token: HTTPAuthorizationCredentials = Depends(HTTPBearer())):  # noqa: B008
+        if token.credentials != OAUTH_TOKEN:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        return token
+
+    @app.get("/greet-oauth/{name}")
+    def greet_oauth(name: str, token: HTTPAuthorizationCredentials = Depends(oauth_auth)):  # noqa: B008
+        greeting = f"Hello, {name} from oauth_auth, using {token}"
+        return JSONResponse(content={"greeting": greeting})
+
+    return app
+
+
 class TestOpenAPIAuth:
 
     def test_greet_api_key_auth(self, test_files_path):
@@ -199,3 +217,21 @@ class TestOpenAPIAuth:
         }
         response = client.invoke(payload)
         assert response == {"greeting": "Hello, John from bearer_auth, using secret_bearer_token"}
+
+    def test_greet_oauth_auth(self, test_files_path):
+        client = OpenAPIServiceClient(
+            test_files_path / "openapi_greeting_service.yml",
+            FastAPITestClient(create_greet_oauth_auth_app()),
+            OAuthAuthentication(OAUTH_TOKEN),
+        )
+        payload = {
+            "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
+            "function": {
+                "arguments": '{"name": "John"}',
+                "name": "greetOAuth",
+            },
+            "type": "function",
+        }
+        response = client.invoke(payload)
+        auth = HTTPAuthorizationCredentials(scheme="Bearer", credentials="secret-oauth-token")
+        assert response == {"greeting": f"Hello, John from oauth_auth, using {auth}"}

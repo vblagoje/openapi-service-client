@@ -75,6 +75,26 @@ class HTTPAuthentication(AuthenticationStrategy):
             raise ValueError("HTTPAuthentication strategy received a non-HTTP security scheme.")
 
 
+class OAuthSettings(BaseSettings):
+    access_token: Optional[str] = None
+    token_type: Optional[str] = None
+
+
+class OAuthAuthentication(AuthenticationStrategy):
+    def __init__(self, access_token: Optional[str] = None, token_type: Optional[str] = None):
+        self.settings = OAuthSettings(access_token=access_token, token_type=token_type)
+
+        if not self.settings.access_token:
+            raise ValueError("Access token must be provided for OAuth authentication.")
+
+    def apply_auth(self, security_scheme: Dict[str, Any], request: Dict[str, Any]):
+        if security_scheme["type"] == "oauth2":
+            token_type = self.settings.token_type or "Bearer"
+            request.setdefault("headers", {})["Authorization"] = f"{token_type} {self.settings.access_token}"
+        else:
+            raise ValueError("OAuthAuthentication strategy received a non-OAuth2 security scheme.")
+
+
 class HttpClientConfig(BaseSettings):
     timeout: int = 10
     max_retries: int = 3
