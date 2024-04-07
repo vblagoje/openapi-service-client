@@ -3,9 +3,7 @@ from openapi_service_client.config.configuration import (
     ApiKeyAuthentication,
     HTTPAuthentication,
     HttpClientConfig,
-    LoggingConfig,
     OAuthAuthentication,
-    OpenAPIServiceClientConfiguration,
 )
 
 __all__ = [
@@ -15,6 +13,4 @@ __all__ = [
     "HTTPAuthentication",
     "OAuthAuthentication",
     "HttpClientConfig",
-    "LoggingConfig",
-    "OpenAPIServiceClientConfiguration",
 ]
