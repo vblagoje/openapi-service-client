@@ -4,6 +4,7 @@ import pytest
 from fastapi import FastAPI, HTTPException
 
 from openapi_service_client import OpenAPIServiceClient
+from openapi_service_client.client_configuration import DefaultOpenAPIServiceClientConfiguration
 from openapi_service_client.http_client import HttpClientError
 from tests.conftest import FastAPITestClient
 
@@ -22,8 +23,10 @@ class TestErrorHandling:
     @pytest.mark.parametrize("status_code", [400, 401, 403, 404, 500])
     def test_http_error_handling(self, test_files_path, status_code):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_error_handling.yml",
-            FastAPITestClient(create_error_handling_app()),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_error_handling.yml",
+                http_client=FastAPITestClient(create_error_handling_app()),
+            )
         )
         json_error = {"status_code": status_code}
         payload = {

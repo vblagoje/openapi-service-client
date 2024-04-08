@@ -22,21 +22,39 @@ pip install openapi-service-client
 ```
 
 ## Usage
-To use the `OpenAPIServiceClient`, you need to have an OpenAPI specification file (in YAML or JSON format) that describes the API you want to interact with. Below are examples of how to use the library with both explicit and implicit authentication configurations.
 
-### Explicit Authentication
-In this example, we explicitly define the authentication mechanism by using ApiKeyAuthentication to provide the API key.
+To effectively use the `OpenAPIServiceClient`, follow these steps to configure and invoke operations on your target API defined by an OpenAPI specification.
+
+### Step 1: Configuration
+
+Begin by creating a client configuration using the `OpenAPIServiceClientConfigurationBuilder`. This configuration includes the path to your OpenAPI specification and the authentication details.
+
+#### Configuration Example:
 
 ```python
 from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.config import ApiKeyAuthentication
+from openapi_service_client.client_configuration import OpenAPIServiceClientConfigurationBuilder
 
-api = OpenAPIServiceClient(
-    openapi_spec="/path/to/weather_service.yml",
-    auth_config=ApiKeyAuthentication(api_key="your_api_key")
-)
+# Initialize the configuration builder
+config_builder = OpenAPIServiceClientConfigurationBuilder()
 
-payload = {
+# Build the configuration
+config = (config_builder
+          .with_openapi_spec("/path/to/your/openapi_spec.yaml")
+          .with_credentials("your_api_key_or_bearer_token")
+          .build())
+
+# Create the client with the configured settings
+api_client = OpenAPIServiceClient(config)
+```
+
+This example demonstrates a basic setup. You can further customize the configuration by specifying additional parameters such as a custom HTTP client or advanced authentication strategies.
+
+### Step 2: Invoking API Operations
+With the client configured, you can invoke operations defined in your OpenAPI specification. Simply pass OpenAI function-calling JSON payloads to the `invoke` method to call the desired operation.
+
+```python
+operation_payload = {
     "type": "function",
     "name": "weather_forecast",
     "arguments": {
@@ -45,37 +63,56 @@ payload = {
     }
 }
 
-response = api.invoke(payload)
+# Execute the operation
+response = api_client.invoke(operation_payload)
 print(response)
 ```
 
-In this scenario, ApiKeyAuthentication is utilized to directly provide the API key as part of the authentication configuration. You might want to use this approach when you want to explicitly specify the authentication method and provide the necessary credentials.
+In this example, operation_payload contains the necessary information to call the weather_forecast operation, specifying the city and the number of forecast days as arguments. The invoke method sends the request to the API and returns the response.
 
-### Implicit Authentication
-Alternatively, you can pass your secret token directly, and `OpenAPIServiceClient` will deduce the appropriate authentication method based on the OpenAPI specification. This approach is useful when you want the library to automatically select the correct authentication strategy.
+### Notes on Authentication
+
+The `with_credentials` method in the configuration builder accommodates a variety of authentication mechanisms to suit different API security requirements:
+
+- **API Key Authentication:** Use `ApiKeyAuthentication` when your API requires an API key. This class supports adding the API key in the request header, query parameters, or cookies, based on the API's specification.
+
+    ```python
+    from openapi_service_client.config import ApiKeyAuthentication
+    config_builder.with_credentials(ApiKeyAuthentication(api_key="your_api_key"))
+    ```
+
+- **HTTP Authentication:** For APIs using HTTP Basic or Bearer Authentication, `HTTPAuthentication` allows you to specify credentials. Provide a username and password for Basic authentication, or a token for Bearer authentication.
+
+    ```python
+    from openapi_service_client.config import HTTPAuthentication
+
+    # For Basic Auth
+    config_builder.with_credentials(HTTPAuthentication(username="user", password="pass"))
+
+    # For Bearer Token
+    config_builder.with_credentials(HTTPAuthentication(token="your_bearer_token"))
+    ```
+
+- **OAuth2 Authentication:** Use `OAuthAuthentication` for APIs secured with OAuth2. Specify your access token and, if necessary, the token type (defaults to "Bearer").
+
+    ```python
+    from openapi_service_client.config import OAuthAuthentication
+
+    config_builder.with_credentials(OAuthAuthentication(access_token="your_access_token", token_type="Bearer"))
+    ```
+
+Each authentication strategy is designed to integrate seamlessly with the OpenAPI specification's security schemes, ensuring your API calls are correctly authenticated according to the API's requirements.
+
+#### Implicit Credentials
+
+For a more straightforward setup, the `with_credentials` method allows passing a token directly as a string (or a dictionary), enabling implicit determination of the appropriate authentication strategy based on the API's security requirements.
 
 ```python
-
-from openapi_service_client import OpenAPIServiceClient
-
-api = OpenAPIServiceClient(
-    openapi_spec="/path/to/weather_service.yml",
-    auth_config="your_secret_token"
-)
-
-payload = {
-    "type": "function",
-    "name": "weather_forecast",
-    "arguments": {
-        "location": "San Francisco, CA",
-        "num_days": 3
-    }
-}
-
-response = api.invoke(payload)
-print(response)
+config_builder.with_credentials("your_bearer_token")
 ```
-In this example, by providing a secret token as a string to auth_config, the library examines the OpenAPI specification to identify and apply the necessary authentication method (e.g., API key, OAuth2 token). This flexibility allows for a more straightforward setup when the authentication strategy can be inferred from the OpenAPI spec and the provided token.
+
+This method simplifies client configuration for APIs that accept a single token, automatically applying the correct authentication strategy without manual selection.
+
 
 ## How It Works
 `OpenAPIServiceClient` simplifies the process of invoking REST services defined by OpenAPI specifications. It takes care of the complexities involved in making HTTP requests, handling authentication, and processing responses.
@@ -85,9 +122,6 @@ When you provide an OpenAPI specification file to the client, it parses the spec
 The client handles the REST invocation by constructing the appropriate HTTP request based on the OpenAPI specification. It takes care of parameter placing (path, query, requestBody etc.), payload formatting, authentication, and error handling. The response from the API is then returned to the caller for further processing.
 
 By leveraging the OpenAPI specification, `OpenAPIServiceClient` eliminates the need for manual request setup and simplifies the integration process. It allows you to focus on working with LLM-generated function calls and seamlessly invoke the underlying services.
-## Configuration
-
-OpenAPI Service Client provides various configuration options to customize the behavior of the client. You can configure authentication, HTTP client settings, and more. Refer to the documentation for detailed information on the available configuration options.
 
 ## Contributing
 

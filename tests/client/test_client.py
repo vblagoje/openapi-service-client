@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from openapi_service_client import OpenAPIServiceClient
+from openapi_service_client.client_configuration import DefaultOpenAPIServiceClientConfiguration
 from tests.conftest import FastAPITestClient
 
 """
@@ -68,8 +69,10 @@ class TestOpenAPI:
 
     def test_greet_mix_params_body(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_mix_params_body_app()),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_mix_params_body_app()),
+            )
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
@@ -84,8 +87,10 @@ class TestOpenAPI:
 
     def test_greet_params_only(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_params_only_app()),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_params_only_app()),
+            )
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
@@ -100,8 +105,10 @@ class TestOpenAPI:
 
     def test_greet_request_body_only(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_request_body_only_app()),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_request_body_only_app()),
+            )
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",

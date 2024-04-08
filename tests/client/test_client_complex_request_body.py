@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from openapi_service_client import OpenAPIServiceClient
+from openapi_service_client.client_configuration import DefaultOpenAPIServiceClientConfiguration
 from tests.conftest import FastAPITestClient
 
 
@@ -52,8 +53,9 @@ class TestComplexRequestBody:
     @pytest.mark.parametrize("spec_file_path", ["openapi_order_service.yml", "openapi_order_service.json"])
     def test_create_order(self, spec_file_path, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / spec_file_path,
-            FastAPITestClient(create_order_app()),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / spec_file_path, http_client=FastAPITestClient(create_order_app())
+            )
         )
         order_json = {
             "customer": {"name": "John Doe", "email": "john@example.com"},

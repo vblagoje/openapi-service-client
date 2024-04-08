@@ -1,23 +1,20 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
+from openapi_service_client.client import OpenAPIServiceClientConfiguration
 from openapi_service_client.config import (
-    AuthenticationStrategy,
     PassThroughAuthentication,
 )
-from openapi_service_client.http_client.client import AbstractHttpClient
-from openapi_service_client.spec import OpenAPISpecification, Operation
+from openapi_service_client.spec import Operation
 
 
 class RequestBuilder:
     def __init__(
         self,
-        openapi_parser: OpenAPISpecification,
-        http_client: AbstractHttpClient,
-        auth_config: Optional[AuthenticationStrategy] = None,
+        client_config: OpenAPIServiceClientConfiguration,
     ):
-        self.openapi_parser = openapi_parser
-        self.http_client = http_client
-        self.auth_config = auth_config or PassThroughAuthentication()
+        self.openapi_parser = client_config.get_openapi_spec()
+        self.http_client = client_config.get_http_client()
+        self.auth_config = client_config.get_auth_config() or PassThroughAuthentication()
 
     def build_request(self, operation: Operation, **kwargs) -> Any:
         url = self._build_url(operation, **kwargs)
