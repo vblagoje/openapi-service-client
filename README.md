@@ -55,12 +55,12 @@ With the client configured, you can invoke operations defined in your OpenAPI sp
 
 ```python
 operation_payload = {
-    "type": "function",
-    "name": "weather_forecast",
-    "arguments": {
-        "location": "San Francisco, CA",
-        "num_days": 3
-    }
+    "id": "call_UNIQUEID123456",
+    "function": {
+        "arguments": "{\"location\": \"San Francisco, CA\", \"num_days\": 3}",
+        "name": "weather_forecast"
+    },
+    "type": "function"
 }
 
 # Execute the operation
