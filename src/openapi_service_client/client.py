@@ -1,38 +1,20 @@
 import json
-import os
-from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict
 
-from openapi_service_client.auth_factory import AuthenticationFactoryRegistry
-from openapi_service_client.config import AuthenticationStrategy
-from openapi_service_client.http_client import (
-    VALID_HTTP_METHODS,
-    AbstractHttpClient,
-    RequestsHttpClient,
-)
+from openapi_service_client.client_configuration import OpenAPIServiceClientConfiguration
+from openapi_service_client.http_client import VALID_HTTP_METHODS
 from openapi_service_client.request_builder import RequestBuilder
-from openapi_service_client.spec import OpenAPISpecification, Operation
+from openapi_service_client.spec import Operation
 
 
 class OpenAPIServiceClient:
     def __init__(
         self,
-        openapi_spec: Union[str, Dict[str, Any]],
-        http_client: Optional[AbstractHttpClient] = None,
-        auth_config: Optional[Union[str, Dict[str, Any], AuthenticationStrategy]] = None,
+        client_config: OpenAPIServiceClientConfiguration,
     ):
-        if isinstance(openapi_spec, (str, Path)) and os.path.isfile(openapi_spec):
-            self.openapi_spec = OpenAPISpecification.from_file(openapi_spec)
-        elif isinstance(openapi_spec, dict):
-            self.openapi_spec = OpenAPISpecification.from_dict(openapi_spec)
-        else:
-            raise ValueError("Invalid OpenAPI specification format. Expected file path or dictionary.")
-
-        self.http_client = http_client or RequestsHttpClient()
-
-        auth_factory_registry = AuthenticationFactoryRegistry.get_instance().get_factory()
-        created_auth_config = auth_factory_registry.create_authentication(self.openapi_spec, auth_config)
-        self.request_builder = RequestBuilder(self.openapi_spec, self.http_client, auth_config=created_auth_config)
+        self.openapi_spec = client_config.get_openapi_spec()
+        self.http_client = client_config.get_http_client()
+        self.request_builder = RequestBuilder(client_config)
 
     def get_operations(self) -> Dict[str, Dict[str, Operation]]:
         operations: Dict[str, Dict[str, Operation]] = {}

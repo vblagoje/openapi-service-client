@@ -11,8 +11,8 @@ from fastapi.security import (
 )
 
 from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.config import ApiKeyAuthentication
-from openapi_service_client.config.configuration import HTTPAuthentication, OAuthAuthentication
+from openapi_service_client.client_configuration import DefaultOpenAPIServiceClientConfiguration
+from openapi_service_client.config import ApiKeyAuthentication, HTTPAuthentication, OAuthAuthentication
 from tests.conftest import FastAPITestClient
 
 API_KEY = "secret_api_key"
@@ -135,9 +135,11 @@ class TestOpenAPIAuth:
 
     def test_greet_api_key_auth(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_api_key_auth_app()),
-            ApiKeyAuthentication(API_KEY),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_api_key_auth_app()),
+                credentials=ApiKeyAuthentication(API_KEY),
+            )
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
@@ -152,9 +154,11 @@ class TestOpenAPIAuth:
 
     def test_greet_basic_auth(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_basic_auth_app()),
-            HTTPAuthentication(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_basic_auth_app()),
+                credentials=HTTPAuthentication(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD),
+            )
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
@@ -169,9 +173,11 @@ class TestOpenAPIAuth:
 
     def test_greet_api_key_query_auth(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_api_key_query_app()),
-            ApiKeyAuthentication(API_KEY_QUERY),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_api_key_query_app()),
+                credentials=ApiKeyAuthentication(API_KEY_QUERY),
+            ),
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
@@ -186,9 +192,11 @@ class TestOpenAPIAuth:
 
     def test_greet_api_key_cookie_auth(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_api_key_cookie_app()),
-            ApiKeyAuthentication(API_KEY_COOKIE),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_api_key_cookie_app()),
+                credentials=ApiKeyAuthentication(API_KEY_COOKIE),
+            )
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
@@ -203,9 +211,11 @@ class TestOpenAPIAuth:
 
     def test_greet_bearer_auth(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_bearer_auth_app()),
-            HTTPAuthentication(token=BEARER_TOKEN),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_bearer_auth_app()),
+                credentials=HTTPAuthentication(token=BEARER_TOKEN),
+            )
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
@@ -220,9 +230,11 @@ class TestOpenAPIAuth:
 
     def test_greet_oauth_auth(self, test_files_path):
         client = OpenAPIServiceClient(
-            test_files_path / "openapi_greeting_service.yml",
-            FastAPITestClient(create_greet_oauth_auth_app()),
-            OAuthAuthentication(OAUTH_TOKEN),
+            DefaultOpenAPIServiceClientConfiguration(
+                openapi_spec=test_files_path / "openapi_greeting_service.yml",
+                http_client=FastAPITestClient(create_greet_oauth_auth_app()),
+                credentials=OAuthAuthentication(OAUTH_TOKEN),
+            )
         )
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",

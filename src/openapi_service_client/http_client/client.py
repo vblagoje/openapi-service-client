@@ -46,10 +46,8 @@ class RequestsHttpClient(AbstractHttpClient):
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
-            # Handle HTTP errors
             raise HttpClientError(f"HTTP error occurred: {e}") from e
         except requests.exceptions.RequestException as e:
-            # Handle other request exceptions
             raise HttpClientError(f"HTTP error occurred: {e}") from e
 
 

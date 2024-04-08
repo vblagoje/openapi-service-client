@@ -34,10 +34,8 @@ class Operation:
         return self.operation_dict.get("responses", {})
 
     def get_security_requirements(self) -> List[Dict[str, List[str]]]:
-        # Try to get operation-specific security requirements first
         security_requirements = self.operation_dict.get("security", [])
 
-        # If not present, default to the global security requirements
         if not security_requirements:
             security_requirements = self.spec_dict.get("security", [])
 

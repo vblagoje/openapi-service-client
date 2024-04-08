@@ -27,10 +27,8 @@ class OpenAPISpecification:
         with open(spec_file, encoding="utf-8") as file:
             content = file.read()
         try:
-            # Try to load as JSON
             loaded_spec = json.loads(content)
         except json.JSONDecodeError:
-            # If JSON fails, attempt to load as YAML
             try:
                 loaded_spec = yaml.safe_load(content)
             except yaml.YAMLError as e:
@@ -64,10 +62,7 @@ class OpenAPISpecification:
             if not operation_dict:
                 raise ValueError(f"No operation found for method {method} at path {path}")
             return Operation(path, method.lower(), operation_dict, self.spec_dict)
-        # If method is not specified, check the number of operations under
-        # the path.
         if len(path_item) == 1:
-            # Only one operation exists, return it.
             method, operation_dict = next(iter(path_item.items()))
             return Operation(path, method, operation_dict, self.spec_dict)
         if len(path_item) > 1:
