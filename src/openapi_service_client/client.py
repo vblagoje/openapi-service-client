@@ -25,19 +25,19 @@ class OpenAPIServiceClient:
                     operations[path][method] = operation
         return operations
 
-    def _find_function_params(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _find_function_arguments(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         if isinstance(payload, dict):
             if "name" in payload and "arguments" in payload:
                 return payload
             for _, value in payload.items():
                 if isinstance(value, dict):
-                    result = self._find_function_params(value)
+                    result = self._find_function_arguments(value)
                     if result:
                         return result
         raise OpenAPIClientError("No OpenAI function-calling JSON payload found", payload)
 
     def invoke(self, openai_fc_payload: Dict[str, Any]) -> Any:
-        fn_invocation_payload = self._find_function_params(openai_fc_payload)
+        fn_invocation_payload = self._find_function_arguments(openai_fc_payload)
 
         # fn_invocation_payload guaranteed to have "name" and "arguments" keys from here on
         arguments = fn_invocation_payload.get("arguments")

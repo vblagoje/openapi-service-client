@@ -11,7 +11,7 @@ from fastapi.security import (
 )
 
 from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.client_configuration import DefaultOpenAPIServiceClientConfiguration
+from openapi_service_client.client_configuration import OpenAPIServiceClientConfigurationBuilder
 from openapi_service_client.config import ApiKeyAuthentication, HTTPAuthentication, OAuthAuthentication
 from tests.conftest import FastAPITestClient
 
@@ -134,13 +134,14 @@ def create_greet_oauth_auth_app() -> FastAPI:
 class TestOpenAPIAuth:
 
     def test_greet_api_key_auth(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_api_key_auth_app()),
-                credentials=ApiKeyAuthentication(API_KEY),
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_api_key_auth_app()))
+            .with_credentials(ApiKeyAuthentication(API_KEY))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
@@ -153,13 +154,14 @@ class TestOpenAPIAuth:
         assert response == {"greeting": "Hello, John from api_key_auth, using secret_api_key"}
 
     def test_greet_basic_auth(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_basic_auth_app()),
-                credentials=HTTPAuthentication(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD),
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_basic_auth_app()))
+            .with_credentials(HTTPAuthentication(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
@@ -172,13 +174,14 @@ class TestOpenAPIAuth:
         assert response == {"greeting": "Hello, John from basic_auth, using admin"}
 
     def test_greet_api_key_query_auth(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_api_key_query_app()),
-                credentials=ApiKeyAuthentication(API_KEY_QUERY),
-            ),
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_api_key_query_app()))
+            .with_credentials(ApiKeyAuthentication(API_KEY_QUERY))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
@@ -191,13 +194,14 @@ class TestOpenAPIAuth:
         assert response == {"greeting": "Hello, John from api_key_query_auth, using secret_api_key_query"}
 
     def test_greet_api_key_cookie_auth(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_api_key_cookie_app()),
-                credentials=ApiKeyAuthentication(API_KEY_COOKIE),
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_api_key_cookie_app()))
+            .with_credentials(ApiKeyAuthentication(API_KEY_COOKIE))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
@@ -210,13 +214,14 @@ class TestOpenAPIAuth:
         assert response == {"greeting": "Hello, John from api_key_cookie_auth, using secret_api_key_cookie"}
 
     def test_greet_bearer_auth(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_bearer_auth_app()),
-                credentials=HTTPAuthentication(token=BEARER_TOKEN),
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_bearer_auth_app()))
+            .with_credentials(HTTPAuthentication(token=BEARER_TOKEN))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
@@ -229,13 +234,14 @@ class TestOpenAPIAuth:
         assert response == {"greeting": "Hello, John from bearer_auth, using secret_bearer_token"}
 
     def test_greet_oauth_auth(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_oauth_auth_app()),
-                credentials=OAuthAuthentication(OAUTH_TOKEN),
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_oauth_auth_app()))
+            .with_credentials(OAuthAuthentication(OAUTH_TOKEN))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {

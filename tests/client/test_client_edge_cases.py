@@ -1,21 +1,25 @@
 import pytest
 
 from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.client_configuration import DefaultOpenAPIServiceClientConfiguration
+from openapi_service_client.client_configuration import OpenAPIServiceClientConfigurationBuilder
 from tests.conftest import FastAPITestClient
 
 
 class TestEdgeCases:
     def test_invalid_openapi_spec(self):
+        builder = OpenAPIServiceClientConfigurationBuilder()
         with pytest.raises(ValueError, match="Invalid OpenAPI specification format"):
-            OpenAPIServiceClient(DefaultOpenAPIServiceClientConfiguration(openapi_spec="invalid_spec.yml"))
+            config = builder.with_openapi_spec("invalid_spec.yml").build()
+            OpenAPIServiceClient(config)
 
     def test_missing_operation_id(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_edge_cases.yml", http_client=FastAPITestClient(None)
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_edge_cases.yml")
+            .with_http_client(FastAPITestClient(None))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
 
         payload = {
             "type": "function",

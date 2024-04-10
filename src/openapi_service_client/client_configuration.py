@@ -29,7 +29,7 @@ class OpenAPIServiceClientConfiguration(Protocol):
         pass
 
 
-class DefaultOpenAPIServiceClientConfiguration(OpenAPIServiceClientConfiguration):
+class _DefaultOpenAPIServiceClientConfiguration(OpenAPIServiceClientConfiguration):
 
     def __init__(
         self,
@@ -122,6 +122,6 @@ class OpenAPIServiceClientConfigurationBuilder:
         if self._openapi_spec is None:
             raise ValueError("OpenAPI specification must be provided to build a configuration.")
 
-        return DefaultOpenAPIServiceClientConfiguration(
+        return _DefaultOpenAPIServiceClientConfiguration(
             openapi_spec=self._openapi_spec, credentials=self._credentials, http_client=self._http_client
         )

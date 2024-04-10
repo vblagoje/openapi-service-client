@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.client_configuration import DefaultOpenAPIServiceClientConfiguration
+from openapi_service_client.client_configuration import OpenAPIServiceClientConfigurationBuilder
 from tests.conftest import FastAPITestClient
 
 """
@@ -68,12 +68,13 @@ def create_greet_request_body_only_app() -> FastAPI:
 class TestOpenAPI:
 
     def test_greet_mix_params_body(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_mix_params_body_app()),
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_mix_params_body_app()))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
@@ -86,12 +87,13 @@ class TestOpenAPI:
         assert response == {"greeting": "Bonjour, John from mix_params_body!"}
 
     def test_greet_params_only(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_params_only_app()),
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_params_only_app()))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
@@ -104,12 +106,13 @@ class TestOpenAPI:
         assert response == {"greeting": "Hello, John from params_only!"}
 
     def test_greet_request_body_only(self, test_files_path):
-        client = OpenAPIServiceClient(
-            DefaultOpenAPIServiceClientConfiguration(
-                openapi_spec=test_files_path / "openapi_greeting_service.yml",
-                http_client=FastAPITestClient(create_greet_request_body_only_app()),
-            )
+        builder = OpenAPIServiceClientConfigurationBuilder()
+        config = (
+            builder.with_openapi_spec(test_files_path / "openapi_greeting_service.yml")
+            .with_http_client(FastAPITestClient(create_greet_request_body_only_app()))
+            .build()
         )
+        client = OpenAPIServiceClient(config)
         payload = {
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
