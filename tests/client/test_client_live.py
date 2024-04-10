@@ -4,14 +4,14 @@ import os
 import pytest
 
 from openapi_service_client.client import OpenAPIServiceClient
-from openapi_service_client.client_configuration import OpenAPIServiceClientConfigurationBuilder
+from openapi_service_client.client_configuration import ClientConfigurationBuilder
 
 
 class TestClientLive:
 
     @pytest.mark.skipif("SERPERDEV_API_KEY" not in os.environ, reason="SERPERDEV_API_KEY not set")
     def test_serperdev(self, test_files_path):
-        builder = OpenAPIServiceClientConfigurationBuilder()
+        builder = ClientConfigurationBuilder()
         config = (
             builder.with_openapi_spec(test_files_path / "serper.yaml")
             .with_credentials(os.getenv("SERPERDEV_API_KEY"))
@@ -30,7 +30,7 @@ class TestClientLive:
         assert "politician" in str(response)
 
     def test_github(self, test_files_path):
-        builder = OpenAPIServiceClientConfigurationBuilder()
+        builder = ClientConfigurationBuilder()
         config = builder.with_openapi_spec(test_files_path / "github_compare.yml").build()
         api = OpenAPIServiceClient(config)
 

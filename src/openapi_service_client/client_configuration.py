@@ -14,7 +14,7 @@ from openapi_service_client.http_client import AbstractHttpClient, RequestsHttpC
 from openapi_service_client.spec import OpenAPISpecification
 
 
-class OpenAPIServiceClientConfiguration(Protocol):
+class ClientConfiguration(Protocol):
 
     def get_http_client(self) -> AbstractHttpClient:
         pass
@@ -29,7 +29,7 @@ class OpenAPIServiceClientConfiguration(Protocol):
         pass
 
 
-class _DefaultOpenAPIServiceClientConfiguration(OpenAPIServiceClientConfiguration):
+class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
 
     def __init__(
         self,
@@ -98,27 +98,27 @@ class _DefaultOpenAPIServiceClientConfiguration(OpenAPIServiceClientConfiguratio
             raise ValueError("Unable to create authentication from provided credentials: {credentials}")
 
 
-class OpenAPIServiceClientConfigurationBuilder:
+class ClientConfigurationBuilder:
     def __init__(self):
         self._openapi_spec: Union[str, Path, None] = None
         self._credentials: Optional[Union[str, Dict[str, Any], AuthenticationStrategy]] = None
         self._http_client: Optional[AbstractHttpClient] = None
 
-    def with_openapi_spec(self, openapi_spec: Union[str, Path]) -> "OpenAPIServiceClientConfigurationBuilder":
+    def with_openapi_spec(self, openapi_spec: Union[str, Path]) -> "ClientConfigurationBuilder":
         self._openapi_spec = openapi_spec
         return self
 
     def with_credentials(
         self, credentials: Union[str, Dict[str, Any], AuthenticationStrategy]
-    ) -> "OpenAPIServiceClientConfigurationBuilder":
+    ) -> "ClientConfigurationBuilder":
         self._credentials = credentials
         return self
 
-    def with_http_client(self, http_client: AbstractHttpClient) -> "OpenAPIServiceClientConfigurationBuilder":
+    def with_http_client(self, http_client: AbstractHttpClient) -> "ClientConfigurationBuilder":
         self._http_client = http_client
         return self
 
-    def build(self) -> OpenAPIServiceClientConfiguration:
+    def build(self) -> ClientConfiguration:
         if self._openapi_spec is None:
             raise ValueError("OpenAPI specification must be provided to build a configuration.")
 

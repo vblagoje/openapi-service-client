@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict
 
-from openapi_service_client.client_configuration import OpenAPIServiceClientConfiguration
+from openapi_service_client.client_configuration import ClientConfiguration
 from openapi_service_client.http_client import VALID_HTTP_METHODS
 from openapi_service_client.request_builder import RequestBuilder
 from openapi_service_client.spec import Operation
@@ -10,7 +10,7 @@ from openapi_service_client.spec import Operation
 class OpenAPIServiceClient:
     def __init__(
         self,
-        client_config: OpenAPIServiceClientConfiguration,
+        client_config: ClientConfiguration,
     ):
         self.openapi_spec = client_config.get_openapi_spec()
         self.http_client = client_config.get_http_client()

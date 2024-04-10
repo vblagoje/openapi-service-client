@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.client_configuration import OpenAPIServiceClientConfigurationBuilder
+from openapi_service_client.client_configuration import ClientConfigurationBuilder
 from tests.conftest import FastAPITestClient
 
 
@@ -53,7 +53,7 @@ class TestPaymentProcess:
 
     def test_process_payment(self, test_files_path):
         config = (
-            OpenAPIServiceClientConfigurationBuilder()
+            ClientConfigurationBuilder()
             .with_openapi_spec(test_files_path / "complex_types_openapi_service.json")
             .with_http_client(FastAPITestClient(create_payment_app()))
             .build()

@@ -7,7 +7,7 @@ OpenAPI Service Client is a Python library that enables seamless integration bet
 
 ## Features
 
-- Seamless integration with LLM-generated function calls using OpenAI's function-calling JSON format
+- Easy integration with LLM-generated function calls using OpenAI's function-calling JSON format
 - Automatic handling of REST invocations and data retrieval based on OpenAPI specifications
 - Support for various authentication strategies, including API key and HTTP authentication
 - Flexible configuration options for adapting the client behavior
@@ -33,10 +33,10 @@ Begin by creating a client configuration using the `OpenAPIServiceClientConfigur
 
 ```python
 from openapi_service_client import OpenAPIServiceClient
-from openapi_service_client.client_configuration import OpenAPIServiceClientConfigurationBuilder
+from openapi_service_client.client_configuration import ClientConfigurationBuilder
 
 # Initialize the configuration builder
-config_builder = OpenAPIServiceClientConfigurationBuilder()
+config_builder = ClientConfigurationBuilder()
 
 # Build the configuration
 config = (config_builder
@@ -53,12 +53,27 @@ This example demonstrates a basic setup. You can further customize the configura
 ### Step 2: Invoking API Operations
 With the client configured, you can invoke operations defined in your OpenAPI specification. Simply pass OpenAI function-calling JSON payloads to the `invoke` method to call the desired operation.
 
+Let's take the canonical [example](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_call_functions_with_chat_models.ipynb) of resolving function arguments for a weather forecast operation.
+
+Given user's prompt: "What is the weather in San Francisco for the next 3 days?", the function calling LLM generates the following function call:
+```json
+{
+    "id": "call_UNIQUEID123456",
+    "function": {
+        "arguments": "{\"location\": \"San Francisco, CA\", \"num_days\": 3}",
+        "name": "get_current_weather"
+    },
+    "type": "function"
+}
+```
+Given the LLM response above and assuming that you have an OpenAPI specification that defines the `get_current_weather` operation, you can invoke it using the `invoke` method as shown below:
+
 ```python
 operation_payload = {
     "id": "call_UNIQUEID123456",
     "function": {
         "arguments": "{\"location\": \"San Francisco, CA\", \"num_days\": 3}",
-        "name": "weather_forecast"
+        "name": "get_current_weather"
     },
     "type": "function"
 }
@@ -101,7 +116,7 @@ The `with_credentials` method in the configuration builder accommodates a variet
     config_builder.with_credentials(OAuthAuthentication(access_token="your_access_token", token_type="Bearer"))
     ```
 
-Each authentication strategy is designed to integrate seamlessly with the OpenAPI specification's security schemes, ensuring your API calls are correctly authenticated according to the API's requirements.
+Each authentication strategy is designed to integrate easily with the OpenAPI specification's security schemes, ensuring your API calls are correctly authenticated according to the API's requirements.
 
 #### Implicit Credentials
 

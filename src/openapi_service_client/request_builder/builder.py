@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from openapi_service_client.client import OpenAPIServiceClientConfiguration
+from openapi_service_client.client import ClientConfiguration
 from openapi_service_client.config import PassThroughAuthentication
 from openapi_service_client.spec import Operation
 
@@ -8,7 +8,7 @@ from openapi_service_client.spec import Operation
 class RequestBuilder:
     def __init__(
         self,
-        client_config: OpenAPIServiceClientConfiguration,
+        client_config: ClientConfiguration,
     ):
         self.openapi_parser = client_config.get_openapi_spec()
         self.http_client = client_config.get_http_client()
