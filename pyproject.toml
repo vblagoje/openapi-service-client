@@ -64,12 +64,14 @@ dependencies = [
   "black>=23.1.0",
   "mypy>=1.0.0",
   "ruff>=0.0.243",
+  "isort>=5.13.0",
 ]
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/openapi_service_client}"
 style = [
   "ruff check {args:.}",
   "black --check --diff {args:.}",
+  "isort --check --diff {args:.}",
 ]
 fmt = [
   "black {args:.}",
@@ -85,6 +87,12 @@ all = [
 target-version = ["py37"]
 line-length = 120
 skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+line_length = 120
+src_paths = ["src", "tests"]
+
 
 [[tool.mypy.overrides]]
 module = "pydantic"
