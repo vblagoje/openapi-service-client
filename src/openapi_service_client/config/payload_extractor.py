@@ -64,15 +64,40 @@ class OpenAIPayloadExtractor(FunctionPayloadExtractor):
         return ["name", "arguments"]
 
 
-class AnthropicPayloadExtractor(FunctionPayloadExtractor):
+class GenericPayloadExtractor(FunctionPayloadExtractor):
+    def __init__(self, arguments_field_name: str):
+        self.arguments_field_name = arguments_field_name
+
     def extract_function_invocation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         fields_and_values = self.search(payload)
         if fields_and_values:
-            arguments = fields_and_values.get("input")
+            arguments = fields_and_values.get(self.arguments_field_name)
             if not isinstance(arguments, dict):
-                raise ValueError(f"Invalid input type {type(arguments)} for Anthropic function call, expected dict")
+                raise ValueError(
+                    f"Invalid {self.arguments_field_name} type {type(arguments)} for function call, expected dict"
+                )
             return {"name": fields_and_values.get("name"), "arguments": arguments}
         return {}
 
     def required_fields(self) -> List[str]:
-        return ["name", "input"]
+        return ["name", self.arguments_field_name]
+
+
+class AnthropicPayloadExtractor(GenericPayloadExtractor):
+    """
+    Extracts the function name and arguments from the Anthropic generated function call payload.
+    See https://docs.anthropic.com/claude/docs/tool-use for more information.
+    """
+
+    def __init__(self):
+        super().__init__(arguments_field_name="input")
+
+
+class CoherePayloadExtractor(GenericPayloadExtractor):
+    """
+    Extracts the function name and arguments from the Cohere generated function call payload.
+    See https://docs.cohere.com/docs/tool-use for more information.
+    """
+
+    def __init__(self):
+        super().__init__(arguments_field_name="parameters")

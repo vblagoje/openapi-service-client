@@ -7,6 +7,7 @@ from openapi_service_client.config.configuration import (
 )
 from openapi_service_client.config.payload_extractor import (
     AnthropicPayloadExtractor,
+    CoherePayloadExtractor,
     FunctionPayloadExtractor,
     OpenAIPayloadExtractor,
 )
@@ -21,4 +22,5 @@ __all__ = [
     "FunctionPayloadExtractor",
     "OpenAIPayloadExtractor",
     "AnthropicPayloadExtractor",
+    "CoherePayloadExtractor",
 ]

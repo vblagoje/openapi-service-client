@@ -132,7 +132,7 @@ This method simplifies client configuration for APIs that accept a single token,
 ### Function Calling Payload Format
 
 `OpenAPIServiceClient` supports integration with LLMs through a variety of function calling payload formats for function invocation. The default format adheres to OpenAI's function-calling JSON structure, which is not only a standard for OpenAI but also for many other LLM providers, including fireworks.ai, anyscale, together.ai, etc.
-Currently, the client natively supports two payload formats: OpenAI and Anthropic.
+Currently, the client natively supports three payload formats: OpenAI, Anthropic and Cohere.
 
 Adding support for additional payload formats is straightforward. By implementing the `FunctionPayloadExtractor` interface, users can extend the client to handle new formats.
 
