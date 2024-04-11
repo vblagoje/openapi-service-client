@@ -42,7 +42,9 @@ dependencies = [
   "fastapi",
   "coverage[toml]>=6.5",
   "pytest",
-  "pydantic",
+  "openai",
+  "anthropic",
+  "cohere",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"

@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 class OpenAISchemaConverter(OpenAPISpecificationConverter):
 
+    def __init__(self, parameters_name: str = "parameters"):
+        self.parameters_name = parameters_name
+
     def convert(self, schema: OpenAPISpecification) -> List[Dict[str, Any]]:
         resolved_schema = jsonref.replace_refs(schema.spec_dict)
         return self._openapi_to_functions(resolved_schema)
@@ -84,7 +87,7 @@ class OpenAISchemaConverter(OpenAPISpecificationConverter):
                     schema.setdefault("required", []).append(param["name"])
 
         if function_name and description and schema["properties"]:
-            return {"name": function_name, "description": description, "parameters": schema}
+            return {"name": function_name, "description": description, self.parameters_name: schema}
         else:
             logger.warning(f"Invalid OpenAPI spec format provided. Could not extract function from {resolved_spec}")
             return {}

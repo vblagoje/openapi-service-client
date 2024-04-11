@@ -22,7 +22,7 @@ class TestClientLive:
             "id": "call_NJr1NBz2Th7iUWJpRIJZoJIA",
             "function": {
                 "arguments": '{"q": "Who was Zoran Djindjic?"}',
-                "name": "search",
+                "name": "serperdev_search",
             },
             "type": "function",
         }

@@ -11,7 +11,7 @@ class TestOpenAPISchemaConversion:
         assert functions
         assert len(functions) == 1
         function = functions[0]
-        assert function["name"] == "search"
+        assert function["name"] == "serperdev_search"
         assert function["description"] == "Search the web with Google"
         assert function["parameter_definitions"] == {"q": {"description": "", "type": "str", "required": True}}
 

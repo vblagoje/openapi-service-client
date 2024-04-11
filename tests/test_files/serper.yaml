@@ -8,7 +8,7 @@ servers:
 paths:
   /search:
     post:
-      operationId: search
+      operationId: serperdev_search
       description: Search the web with Google
       requestBody:
         required: true
