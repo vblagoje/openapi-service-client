@@ -42,13 +42,12 @@ class TestClientLiveCohere:
             model="command-r",
             preamble=preamble,
             tools=tool_choices,
-            message="Do a google search: Who was Zoran Djindjic?",
+            message="Do a google search: Who was Nikola Tesla?",
         )
         tool_payload = response.tool_calls[0].dict()
         serper_api = OpenAPIServiceClient(config)
         response = serper_api.invoke(tool_payload)
-        assert "politician" in str(response)
-        assert "Zoran" in str(response)
+        assert "inventions" in str(response)
 
     @pytest.mark.skipif("COHERE_API_KEY" not in os.environ, reason="COHERE_API_KEY not set")
     def test_github(self, test_files_path):

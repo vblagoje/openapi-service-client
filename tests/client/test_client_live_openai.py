@@ -24,15 +24,14 @@ class TestClientLiveOpenAPI:
         tool_choice = converter.convert(config.get_openapi_spec())
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": "Do a google search: Who was Zoran Djindjic?"}],
+            messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
             tools=[{"type": "function", "function": tool_choice[0]}],
             tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
         )
         tool_payloads = response.choices[0].message.tool_calls
         serper_api = OpenAPIServiceClient(config)
         response = serper_api.invoke(tool_payloads[0].to_dict())
-        assert "politician" in str(response)
-        assert "Zoran" in str(response)
+        assert "inventions" in str(response)
 
     @pytest.mark.skipif("OPENAI_API_KEY" not in os.environ, reason="OPENAI_API_KEY not set")
     def test_github(self, test_files_path):

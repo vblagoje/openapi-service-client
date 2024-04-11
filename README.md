@@ -3,15 +3,23 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/openapi-service-client.svg)](https://pypi.org/project/openapi-service-client)
 
 
-OpenAPI Service Client is a Python library that enables seamless integration between Large Language Models (LLMs) and services defined by OpenAPI specifications. It provides a simple and intuitive way to invoke REST services using the OpenAI function-calling JSON format, making it easy to integrate with LLM-generated function calls.
+OpenAPI Service Client is a Python library that enables effortless integration between Large Language Models (LLMs) and services defined by OpenAPI specifications. It provides a simple and intuitive way to invoke REST services using the function-calling JSON format, making it easy to integrate with LLM-generated function calls.
+
+## Motivation
+
+The OpenAPI Service Client library aims to simplify the process of invoking OpenAPI-defined services using function calling payloads from various LLM providers. By abstracting away the complexities of making HTTP requests, handling authentication, preparing invocation payloads and processing responses, it allows users to easily invoke underlying services regardless of the LLM provider.
+
+The library supports multiple LLM providers, including OpenAI, Anthropic, and Cohere, making it a versatile tool for integrating LLMs with OpenAPI services. It also provides a flexible and extensible architecture that allows users to add support for additional LLM providers and function-calling payload formats.
 
 ## Features
 
-- Easy integration with LLM-generated function calls using OpenAI's function-calling JSON format
-- Automatic handling of REST invocations and data retrieval based on OpenAPI specifications
-- Support for various authentication strategies, including API key and HTTP authentication
+- Easy integration with LLM-generated function calls using various function-calling JSON formats
+- Support for various LLM providers, including OpenAI, Anthropic, and Cohere
+- Automatic handling of REST invocations based on OpenAPI specifications
+- Support for various authentication strategies, including API key, HTTP authentication, and OAuth2
 - Flexible configuration options for adapting the client behavior
-- Support for multiple function calling payload formats, with an option to add custom formats
+- Extensible architecture for adding support for additional LLM providers and function-calling payload formats
+
 
 ## Installation
 
@@ -25,118 +33,110 @@ pip install openapi-service-client
 
 To effectively use the `OpenAPIServiceClient`, follow these steps to configure and invoke operations on your target API defined by an OpenAPI specification.
 
-### Step 1: Configuration
-
-Begin by creating a client configuration using the `OpenAPIServiceClientConfigurationBuilder`. This configuration includes the path to your OpenAPI specification and the authentication details.
-
-#### Configuration Example:
+### OpenAI Example
 
 ```python
-from openapi_service_client import OpenAPIServiceClient
+import os
+from openai import OpenAI
+from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
+from openapi_service_client.schema_converter import OpenAISchemaConverter
 
-# Initialize the configuration builder
-config_builder = ClientConfigurationBuilder()
+builder = ClientConfigurationBuilder()
+config = (
+    builder.with_openapi_spec("path/to/serper.yaml")
+    .with_credentials(os.getenv("SERPERDEV_API_KEY"))
+    .build()
+)
 
-# Build the configuration
-config = (config_builder
-          .with_openapi_spec("/path/to/your/openapi_spec.yaml")
-          .with_credentials("your_api_key_or_bearer_token")
-          .build())
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+converter = OpenAISchemaConverter()
+tool_choice = converter.convert(config.get_openapi_spec())
 
-# Create the client with the configured settings
-api_client = OpenAPIServiceClient(config)
+response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
+    tools=[{"type": "function", "function": tool_choice[0]}],
+    tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
+)
+
+tool_payloads = response.choices[0].message.tool_calls
+serper_api = OpenAPIServiceClient(config)
+response = serper_api.invoke(tool_payloads[0].to_dict())
+
+assert "inventions" in str(response)
 ```
 
-This example demonstrates a basic setup. You can further customize the configuration by specifying additional parameters such as a custom HTTP client or advanced authentication strategies.
-
-### Step 2: Invoking API Operations
-With the client configured, you can invoke operations defined in your OpenAPI specification. Simply pass OpenAI function-calling JSON payloads to the `invoke` method to call the desired operation.
-
-Let's take the canonical [example](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_call_functions_with_chat_models.ipynb) of resolving function arguments for a weather forecast operation.
-
-Given user's prompt: "What is the weather in San Francisco for the next 3 days?", the function calling LLM generates the following function call:
-```json
-{
-    "id": "call_UNIQUEID123456",
-    "function": {
-        "arguments": "{\"location\": \"San Francisco, CA\", \"num_days\": 3}",
-        "name": "get_current_weather"
-    },
-    "type": "function"
-}
-```
-Given the LLM response above and assuming that you have an OpenAPI specification that defines the `get_current_weather` operation, you can invoke it using the `invoke` method as shown below:
+### Anthropic Example
 
 ```python
-operation_payload = {
-    "id": "call_UNIQUEID123456",
-    "function": {
-        "arguments": "{\"location\": \"San Francisco, CA\", \"num_days\": 3}",
-        "name": "get_current_weather"
-    },
-    "type": "function"
-}
+import os
+import anthropic
+from openapi_service_client.client import OpenAPIServiceClient
+from openapi_service_client.client_configuration import ClientConfigurationBuilder
+from openapi_service_client.config import AnthropicPayloadExtractor
+from openapi_service_client.schema_converter import AnthropicSchemaConverter
 
-# Execute the operation
-response = api_client.invoke(operation_payload)
-print(response)
+builder = ClientConfigurationBuilder()
+config = (
+    builder.with_openapi_spec("path/to/serper.yaml")  
+    .with_credentials(os.getenv("SERPERDEV_API_KEY"))
+    .with_payload_extractor(AnthropicPayloadExtractor())
+    .build()
+)
+
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+converter = AnthropicSchemaConverter()
+tool_choice = converter.convert(config.get_openapi_spec())
+
+response = client.beta.tools.messages.create(
+    model="claude-3-opus-20240229",
+    max_tokens=1024,
+    tools=[tool_choice[0]],
+    messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
+)
+
+tool_payload = response.content[1].to_dict()
+serper_api = OpenAPIServiceClient(config)
+response = serper_api.invoke(tool_payload)
+
+assert "inventions" in str(response)
 ```
-
-In this example, operation_payload contains the necessary information to call the weather_forecast operation, specifying the city and the number of forecast days as arguments. The invoke method sends the request to the API and returns the response.
-
-### Authentication
-
-The `with_credentials` method in the configuration builder accommodates a variety of authentication mechanisms to suit different API security requirements:
-
-- **API Key Authentication:** Use `ApiKeyAuthentication` when your API requires an API key. This class supports adding the API key in the request header, query parameters, or cookies, based on the API's specification.
-
-    ```python
-    from openapi_service_client.config import ApiKeyAuthentication
-    config_builder.with_credentials(ApiKeyAuthentication(api_key="your_api_key"))
-    ```
-
-- **HTTP Authentication:** For APIs using HTTP Basic or Bearer Authentication, `HTTPAuthentication` allows you to specify credentials. Provide a username and password for Basic authentication, or a token for Bearer authentication.
-
-    ```python
-    from openapi_service_client.config import HTTPAuthentication
-
-    # For Basic Auth
-    config_builder.with_credentials(HTTPAuthentication(username="user", password="pass"))
-
-    # For Bearer Token
-    config_builder.with_credentials(HTTPAuthentication(token="your_bearer_token"))
-    ```
-
-- **OAuth2 Authentication:** Use `OAuthAuthentication` for APIs secured with OAuth2. Specify your access token and, if necessary, the token type (defaults to "Bearer").
-
-    ```python
-    from openapi_service_client.config import OAuthAuthentication
-
-    config_builder.with_credentials(OAuthAuthentication(access_token="your_access_token", token_type="Bearer"))
-    ```
-
-Each authentication strategy is designed to integrate easily with the OpenAPI specification's security schemes, ensuring your API calls are correctly authenticated according to the API's requirements.
-
-#### Implicit Credentials
-
-For a more straightforward setup, the `with_credentials` method allows passing a token directly as a string (or a dictionary), enabling implicit determination of the appropriate authentication strategy based on the API's security requirements.
+### Cohere Example
 
 ```python
-config_builder.with_credentials("your_bearer_token")
+import os
+import cohere
+from openapi_service_client.client import OpenAPIServiceClient
+from openapi_service_client.client_configuration import ClientConfigurationBuilder
+from openapi_service_client.config import CoherePayloadExtractor
+from openapi_service_client.schema_converter import CohereSchemaConverter
+
+builder = ClientConfigurationBuilder()
+config = (
+    builder.with_openapi_spec("path/to/serper.yaml")
+    .with_credentials(os.getenv("SERPERDEV_API_KEY"))
+    .with_payload_extractor(CoherePayloadExtractor())
+    .build()
+)
+
+client = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
+converter = CohereSchemaConverter()
+tool_choices = converter.convert(config.get_openapi_spec())
+
+response = client.chat(
+    model="command-r",
+    preamble="A preamble aka system prompt goes here.",
+    tools=tool_choices,
+    message="Do a google search: Who was Nikola Tesla?",
+)
+
+tool_payload = response.tool_calls[0].dict()
+serper_api = OpenAPIServiceClient(config)
+response = serper_api.invoke(tool_payload)
+
+assert "inventions" in str(response)
 ```
-
-This method simplifies client configuration for APIs that accept a single token, automatically applying the correct authentication strategy without manual selection.
-
-
-### Function Calling Payload Format
-
-`OpenAPIServiceClient` supports integration with LLMs through a variety of function calling payload formats for function invocation. The default format adheres to OpenAI's function-calling JSON structure, which is not only a standard for OpenAI but also for many other LLM providers, including fireworks.ai, anyscale, together.ai, etc.
-Currently, the client natively supports three payload formats: OpenAI, Anthropic and Cohere.
-
-Adding support for additional payload formats is straightforward. By implementing the `FunctionPayloadExtractor` interface, users can extend the client to handle new formats.
-
-To customize the function calling payload extraction process or to integrate a new format, use the `with_payload_extractor` method available in the `ClientConfigurationBuilder`. This method enables you to specify a custom payload extractor that conforms to the `FunctionPayloadExtractor` interface.
 
 ## How It Works
 `OpenAPIServiceClient` simplifies the process of invoking REST services defined by OpenAPI specifications. It takes care of the complexities involved in making HTTP requests, handling authentication, and processing responses.

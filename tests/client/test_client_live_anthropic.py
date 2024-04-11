@@ -29,13 +29,12 @@ class TestClientLiveAnthropic:
             model="claude-3-opus-20240229",
             max_tokens=1024,
             tools=[tool_choice[0]],
-            messages=[{"role": "user", "content": "Do a google search: Who was Zoran Djindjic?"}],
+            messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
         )
         tool_payload = response.content[1].to_dict()
         serper_api = OpenAPIServiceClient(config)
         response = serper_api.invoke(tool_payload)
-        assert "politician" in str(response)
-        assert "Zoran" in str(response)
+        assert "inventions" in str(response)
 
     @pytest.mark.skipif("ANTHROPIC_API_KEY" not in os.environ, reason="ANTHROPIC_API_KEY not set")
     def test_github(self, test_files_path):
