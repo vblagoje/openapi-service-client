@@ -5,9 +5,11 @@ from typing import Any, Dict, Optional, Protocol, Union
 from openapi_service_client.config import (
     ApiKeyAuthentication,
     AuthenticationStrategy,
+    FunctionPayloadExtractor,
     HTTPAuthentication,
     HttpClientConfig,
     OAuthAuthentication,
+    OpenAIPayloadExtractor,
     PassThroughAuthentication,
 )
 from openapi_service_client.http_client import AbstractHttpClient, RequestsHttpClient
@@ -28,6 +30,9 @@ class ClientConfiguration(Protocol):
     def get_openapi_spec(self) -> OpenAPISpecification:
         pass
 
+    def get_payload_extractor(self) -> FunctionPayloadExtractor:
+        pass
+
 
 class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
 
@@ -36,6 +41,8 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
         openapi_spec: Union[str, Path],
         credentials: Optional[Union[str, Dict[str, Any], AuthenticationStrategy]] = None,
         http_client: Optional[AbstractHttpClient] = None,
+        http_client_config: Optional[HttpClientConfig] = None,
+        payload_extractor: Optional[FunctionPayloadExtractor] = None,
     ):
         if isinstance(openapi_spec, (str, Path)) and os.path.isfile(openapi_spec):
             self.openapi_spec = OpenAPISpecification.from_file(openapi_spec)
@@ -45,7 +52,9 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
             raise ValueError("Invalid OpenAPI specification format. Expected file path or dictionary.")
 
         self.credentials = credentials
-        self.http_client = http_client or RequestsHttpClient(self.get_http_client_config())
+        self.http_client = http_client or RequestsHttpClient(http_client_config)
+        self.http_client_config = http_client_config or HttpClientConfig()
+        self.payload_extractor = payload_extractor or OpenAIPayloadExtractor()
 
     def get_openapi_spec(self) -> OpenAPISpecification:
         return self.openapi_spec
@@ -54,7 +63,10 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
         return self.http_client
 
     def get_http_client_config(self) -> HttpClientConfig:
-        return HttpClientConfig()
+        return self.http_client_config
+
+    def get_payload_extractor(self) -> FunctionPayloadExtractor:
+        return self.payload_extractor
 
     def get_auth_config(self) -> AuthenticationStrategy:
         if self.credentials is None:
@@ -103,6 +115,8 @@ class ClientConfigurationBuilder:
         self._openapi_spec: Union[str, Path, None] = None
         self._credentials: Optional[Union[str, Dict[str, Any], AuthenticationStrategy]] = None
         self._http_client: Optional[AbstractHttpClient] = None
+        self._http_client_config: Optional[HttpClientConfig] = None
+        self._payload_extractor: Optional[FunctionPayloadExtractor] = None
 
     def with_openapi_spec(self, openapi_spec: Union[str, Path]) -> "ClientConfigurationBuilder":
         self._openapi_spec = openapi_spec
@@ -118,10 +132,22 @@ class ClientConfigurationBuilder:
         self._http_client = http_client
         return self
 
+    def with_http_client_config(self, http_client_config: HttpClientConfig) -> "ClientConfigurationBuilder":
+        self._http_client_config = http_client_config
+        return self
+
+    def with_payload_extractor(self, payload_extractor: FunctionPayloadExtractor) -> "ClientConfigurationBuilder":
+        self._payload_extractor = payload_extractor
+        return self
+
     def build(self) -> ClientConfiguration:
         if self._openapi_spec is None:
             raise ValueError("OpenAPI specification must be provided to build a configuration.")
 
         return _DefaultOpenAPIServiceClientConfiguration(
-            openapi_spec=self._openapi_spec, credentials=self._credentials, http_client=self._http_client
+            openapi_spec=self._openapi_spec,
+            credentials=self._credentials,
+            http_client=self._http_client,
+            http_client_config=self._http_client_config,
+            payload_extractor=self._payload_extractor,
         )

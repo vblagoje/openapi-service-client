@@ -11,7 +11,7 @@ OpenAPI Service Client is a Python library that enables seamless integration bet
 - Automatic handling of REST invocations and data retrieval based on OpenAPI specifications
 - Support for various authentication strategies, including API key and HTTP authentication
 - Flexible configuration options for adapting the client behavior
-- Easy integration with existing Python projects
+- Support for multiple function calling payload formats, with an option to add custom formats
 
 ## Installation
 
@@ -85,7 +85,7 @@ print(response)
 
 In this example, operation_payload contains the necessary information to call the weather_forecast operation, specifying the city and the number of forecast days as arguments. The invoke method sends the request to the API and returns the response.
 
-### Notes on Authentication
+### Authentication
 
 The `with_credentials` method in the configuration builder accommodates a variety of authentication mechanisms to suit different API security requirements:
 
@@ -128,6 +128,15 @@ config_builder.with_credentials("your_bearer_token")
 
 This method simplifies client configuration for APIs that accept a single token, automatically applying the correct authentication strategy without manual selection.
 
+
+### Function Calling Payload Format
+
+`OpenAPIServiceClient` supports integration with LLMs through a variety of function calling payload formats for function invocation. The default format adheres to OpenAI's function-calling JSON structure, which is not only a standard for OpenAI but also for many other LLM providers, including fireworks.ai, anyscale, together.ai, etc.
+Currently, the client natively supports two payload formats: OpenAI and Anthropic.
+
+Adding support for additional payload formats is straightforward. By implementing the `FunctionPayloadExtractor` interface, users can extend the client to handle new formats.
+
+To customize the function calling payload extraction process or to integrate a new format, use the `with_payload_extractor` method available in the `ClientConfigurationBuilder`. This method enables you to specify a custom payload extractor that conforms to the `FunctionPayloadExtractor` interface.
 
 ## How It Works
 `OpenAPIServiceClient` simplifies the process of invoking REST services defined by OpenAPI specifications. It takes care of the complexities involved in making HTTP requests, handling authentication, and processing responses.

@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict
 
 from openapi_service_client.client_configuration import ClientConfiguration
@@ -15,6 +14,7 @@ class OpenAPIServiceClient:
         self.openapi_spec = client_config.get_openapi_spec()
         self.http_client = client_config.get_http_client()
         self.request_builder = RequestBuilder(client_config)
+        self.payload_extractor = client_config.get_payload_extractor()
 
     def get_operations(self) -> Dict[str, Dict[str, Operation]]:
         operations: Dict[str, Dict[str, Operation]] = {}
@@ -25,34 +25,17 @@ class OpenAPIServiceClient:
                     operations[path][method] = operation
         return operations
 
-    def _find_function_arguments(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        if isinstance(payload, dict):
-            if "name" in payload and "arguments" in payload:
-                return payload
-            for _, value in payload.items():
-                if isinstance(value, dict):
-                    result = self._find_function_arguments(value)
-                    if result:
-                        return result
-        raise OpenAPIClientError("No OpenAI function-calling JSON payload found", payload)
-
-    def invoke(self, openai_fc_payload: Dict[str, Any]) -> Any:
-        fn_invocation_payload = self._find_function_arguments(openai_fc_payload)
-
-        # fn_invocation_payload guaranteed to have "name" and "arguments" keys from here on
-        arguments = fn_invocation_payload.get("arguments")
-        if isinstance(arguments, str):
-            # it should always be a JSON string, but you never know with all LLM providers
-            try:
-                args = json.loads(arguments)
-            except json.JSONDecodeError as e:
-                raise OpenAPIClientError(f"Error parsing OpenAI function-calling arguments: {e!s}", arguments) from e
-        elif isinstance(arguments, dict):
-            args = arguments
-        else:
-            raise OpenAPIClientError(f"Invalid arguments type: {type(arguments)}", arguments)
+    def invoke(self, function_payload: Dict[str, Any]) -> Any:
+        fn_invocation_payload = self.payload_extractor.extract_function_invocation(function_payload)
+        if not fn_invocation_payload:
+            raise OpenAPIClientError(
+                f"Failed to extract function invocation payload from {function_payload} using "
+                f"{self.payload_extractor.__class__.__name__}. Ensure the payload format matches the expected "
+                "structure for the designated LLM extractor."
+            )
+        # fn_invocation_payload, if not empty, guaranteed to have "name" and "arguments" keys from here on
         operation = self.openapi_spec.find_operation_by_id(fn_invocation_payload.get("name"))
-        request = self.request_builder.build_request(operation, **args)
+        request = self.request_builder.build_request(operation, **fn_invocation_payload.get("arguments"))
         return self.http_client.send_request(request)
 
 
