@@ -5,6 +5,7 @@ from openapi_service_client.config.configuration import (
     HttpClientConfig,
     OAuthAuthentication,
 )
+
 __all__ = [
     "AuthenticationStrategy",
     "PassThroughAuthentication",
@@ -12,8 +13,4 @@ __all__ = [
     "HTTPAuthentication",
     "OAuthAuthentication",
     "HttpClientConfig",
-    "FunctionPayloadExtractor",
-    "OpenAIPayloadExtractor",
-    "AnthropicPayloadExtractor",
-    "CoherePayloadExtractor",
 ]

@@ -5,8 +5,7 @@ import pytest
 
 from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
-from openapi_service_client.config import AnthropicPayloadExtractor
-from openapi_service_client.schema_converter import AnthropicSchemaConverter
+from openapi_service_client.providers import AnthropicLLMProvider
 
 
 class TestClientLiveAnthropic:
@@ -18,13 +17,11 @@ class TestClientLiveAnthropic:
         config = (
             builder.with_openapi_spec(test_files_path / "serper.yaml")
             .with_credentials(os.getenv("SERPERDEV_API_KEY"))
-            .with_provider(AnthropicPayloadExtractor())
+            .with_provider(AnthropicLLMProvider())
             .build()
         )
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
-        converter = AnthropicSchemaConverter()
-        tool_choice = converter.convert(config.get_openapi_spec())
+        tool_choice = config.get_tools_definitions()
         response = client.beta.tools.messages.create(
             model="claude-3-opus-20240229",
             max_tokens=1024,
@@ -41,14 +38,12 @@ class TestClientLiveAnthropic:
         builder = ClientConfigurationBuilder()
         config = (
             builder.with_openapi_spec(test_files_path / "github_compare.yml")
-            .with_provider(AnthropicPayloadExtractor())
+            .with_provider(AnthropicLLMProvider())
             .build()
         )
 
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
-        converter = AnthropicSchemaConverter()
-        tool_choice = converter.convert(config.get_openapi_spec())
+        tool_choice = config.get_tools_definitions()
         response = client.beta.tools.messages.create(
             model="claude-3-opus-20240229",
             max_tokens=1024,

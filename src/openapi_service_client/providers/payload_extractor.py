@@ -1,4 +1,3 @@
-import json
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
@@ -47,23 +46,6 @@ class FunctionPayloadExtractor(ABC):
         return {}
 
 
-class OpenAIPayloadExtractor(FunctionPayloadExtractor):
-    def extract_function_invocation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        fields_and_values = self.search(payload)
-        if fields_and_values:
-            args = fields_and_values.get("arguments")
-            if not isinstance(args, (str, dict)):
-                raise ValueError(f"Invalid arguments type {type(args)} for OpenAI function call, expected str or dict")
-            return {
-                "name": fields_and_values.get("name"),
-                "arguments": json.loads(args) if isinstance(args, str) else args,
-            }
-        return {}
-
-    def required_fields(self) -> List[str]:
-        return ["name", "arguments"]
-
-
 class GenericPayloadExtractor(FunctionPayloadExtractor):
     def __init__(self, arguments_field_name: str):
         self.arguments_field_name = arguments_field_name
@@ -81,23 +63,3 @@ class GenericPayloadExtractor(FunctionPayloadExtractor):
 
     def required_fields(self) -> List[str]:
         return ["name", self.arguments_field_name]
-
-
-class AnthropicPayloadExtractor(GenericPayloadExtractor):
-    """
-    Extracts the function name and arguments from the Anthropic generated function call payload.
-    See https://docs.anthropic.com/claude/docs/tool-use for more information.
-    """
-
-    def __init__(self):
-        super().__init__(arguments_field_name="input")
-
-
-class CoherePayloadExtractor(GenericPayloadExtractor):
-    """
-    Extracts the function name and arguments from the Cohere generated function call payload.
-    See https://docs.cohere.com/docs/tool-use for more information.
-    """
-
-    def __init__(self):
-        super().__init__(arguments_field_name="parameters")

@@ -40,7 +40,6 @@ import os
 from openai import OpenAI
 from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
-from openapi_service_client.schema_converter import OpenAISchemaConverter
 
 builder = ClientConfigurationBuilder()
 config = (
@@ -50,9 +49,7 @@ config = (
 )
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-converter = OpenAISchemaConverter()
-tool_choice = converter.convert(config.get_openapi_spec())
-
+tool_choice = config.get_tools_definitions()
 response = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
@@ -74,20 +71,19 @@ import os
 import anthropic
 from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
-from openapi_service_client.config import AnthropicPayloadExtractor
-from openapi_service_client.schema_converter import AnthropicSchemaConverter
+from openapi_service_client.providers import AnthropicLLMProvider
+
 
 builder = ClientConfigurationBuilder()
 config = (
     builder.with_openapi_spec("path/to/serper.yaml")
     .with_credentials(os.getenv("SERPERDEV_API_KEY"))
-    .with_provider(AnthropicPayloadExtractor())
+    .with_provider(AnthropicLLMProvider())
     .build()
 )
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-converter = AnthropicSchemaConverter()
-tool_choice = converter.convert(config.get_openapi_spec())
+tool_choice = config.get_tools_definitions()
 
 response = client.beta.tools.messages.create(
     model="claude-3-opus-20240229",
@@ -109,20 +105,18 @@ import os
 import cohere
 from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
-from openapi_service_client.config import CoherePayloadExtractor
-from openapi_service_client.schema_converter import CohereSchemaConverter
+from openapi_service_client.providers import CohereLLMProvider
 
 builder = ClientConfigurationBuilder()
 config = (
     builder.with_openapi_spec("path/to/serper.yaml")
     .with_credentials(os.getenv("SERPERDEV_API_KEY"))
-    .with_provider(CoherePayloadExtractor())
+    .with_provider(CohereLLMProvider())
     .build()
 )
 
 client = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
-converter = CohereSchemaConverter()
-tool_choices = converter.convert(config.get_openapi_spec())
+tool_choices = config.get_tools_definitions()
 
 response = client.chat(
     model="command-r",

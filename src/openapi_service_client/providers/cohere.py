@@ -3,7 +3,9 @@ from typing import Any, Dict, List
 
 import jsonref
 
-from openapi_service_client.schema_converter.converter import OpenAPISpecificationConverter
+from openapi_service_client.providers.converter import OpenAPISpecificationConverter
+from openapi_service_client.providers.llm_provider import LLMProvider
+from openapi_service_client.providers.payload_extractor import FunctionPayloadExtractor, GenericPayloadExtractor
 from openapi_service_client.spec import OpenAPISpecification
 
 logger = logging.getLogger(__name__)
@@ -11,8 +13,11 @@ logger = logging.getLogger(__name__)
 
 class CohereSchemaConverter(OpenAPISpecificationConverter):
 
-    def convert(self, schema: OpenAPISpecification) -> List[Dict[str, Any]]:
-        resolved_schema = jsonref.replace_refs(schema.spec_dict)
+    def __init__(self, schema: OpenAPISpecification):
+        self.schema = schema
+
+    def convert(self) -> List[Dict[str, Any]]:
+        resolved_schema = jsonref.replace_refs(self.schema.spec_dict)
         return self._openapi_to_functions(resolved_schema)
 
     def _openapi_to_functions(self, service_openapi_spec: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -98,3 +103,22 @@ class CohereSchemaConverter(OpenAPISpecificationConverter):
             return "list"
         else:
             raise ValueError(f"Unsupported schema type {schema_type}")
+
+
+class CoherePayloadExtractor(GenericPayloadExtractor):
+    """
+    Extracts the function name and arguments from the Cohere generated function call payload.
+    See https://docs.cohere.com/docs/tool-use for more information.
+    """
+
+    def __init__(self):
+        super().__init__(arguments_field_name="parameters")
+
+
+class CohereLLMProvider(LLMProvider):
+
+    def get_payload_extractor(self) -> FunctionPayloadExtractor:
+        return CoherePayloadExtractor()
+
+    def get_schema_converter(self, openapi_spec: OpenAPISpecification) -> OpenAPISpecificationConverter:
+        return CohereSchemaConverter(schema=openapi_spec)

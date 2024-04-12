@@ -1,9 +1,12 @@
+import json
 import logging
 from typing import Any, Dict, List, Optional
 
 import jsonref
 
-from openapi_service_client.schema_converter.converter import OpenAPISpecificationConverter
+from openapi_service_client.providers.converter import OpenAPISpecificationConverter
+from openapi_service_client.providers.llm_provider import LLMProvider
+from openapi_service_client.providers.payload_extractor import FunctionPayloadExtractor
 from openapi_service_client.spec import OpenAPISpecification
 
 MIN_REQUIRED_OPENAPI_SPEC_VERSION = 3
@@ -11,13 +14,40 @@ MIN_REQUIRED_OPENAPI_SPEC_VERSION = 3
 logger = logging.getLogger(__name__)
 
 
+class OpenAIPayloadExtractor(FunctionPayloadExtractor):
+    def extract_function_invocation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        fields_and_values = self.search(payload)
+        if fields_and_values:
+            args = fields_and_values.get("arguments")
+            if not isinstance(args, (str, dict)):
+                raise ValueError(f"Invalid arguments type {type(args)} for OpenAI function call, expected str or dict")
+            return {
+                "name": fields_and_values.get("name"),
+                "arguments": json.loads(args) if isinstance(args, str) else args,
+            }
+        return {}
+
+    def required_fields(self) -> List[str]:
+        return ["name", "arguments"]
+
+
+class OpenAILLMProvider(LLMProvider):
+
+    def get_payload_extractor(self) -> FunctionPayloadExtractor:
+        return OpenAIPayloadExtractor()
+
+    def get_schema_converter(self, openapi_spec: OpenAPISpecification) -> OpenAPISpecificationConverter:
+        return OpenAISchemaConverter(schema=openapi_spec)
+
+
 class OpenAISchemaConverter(OpenAPISpecificationConverter):
 
-    def __init__(self, parameters_name: str = "parameters"):
+    def __init__(self, schema: OpenAPISpecification, parameters_name: str = "parameters"):
+        self.schema = schema
         self.parameters_name = parameters_name
 
-    def convert(self, schema: OpenAPISpecification) -> List[Dict[str, Any]]:
-        resolved_schema = jsonref.replace_refs(schema.spec_dict)
+    def convert(self) -> List[Dict[str, Any]]:
+        resolved_schema = jsonref.replace_refs(self.schema.spec_dict)
         return self._openapi_to_functions(resolved_schema)
 
     def _openapi_to_functions(self, service_openapi_spec: Dict[str, Any]) -> List[Dict[str, Any]]:

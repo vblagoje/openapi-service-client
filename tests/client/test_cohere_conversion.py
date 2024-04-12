@@ -1,4 +1,4 @@
-from openapi_service_client.schema_converter.cohere import CohereSchemaConverter
+from openapi_service_client.providers.cohere import CohereSchemaConverter
 from openapi_service_client.spec import OpenAPISpecification
 
 
@@ -6,8 +6,8 @@ class TestOpenAPISchemaConversion:
 
     def test_serperdev(self, test_files_path):
         spec = OpenAPISpecification.from_file(test_files_path / "serper.yaml")
-        converter = CohereSchemaConverter()
-        functions = converter.convert(spec)
+        converter = CohereSchemaConverter(schema=spec)
+        functions = converter.convert()
         assert functions
         assert len(functions) == 1
         function = functions[0]
@@ -17,8 +17,8 @@ class TestOpenAPISchemaConversion:
 
     def test_github(self, test_files_path):
         spec = OpenAPISpecification.from_file(test_files_path / "github_compare.yml")
-        converter = CohereSchemaConverter()
-        functions = converter.convert(spec)
+        converter = CohereSchemaConverter(schema=spec)
+        functions = converter.convert()
         assert functions
         assert len(functions) == 1
         function = functions[0]
@@ -41,8 +41,8 @@ class TestOpenAPISchemaConversion:
 
     def test_complex_types(self, test_files_path):
         spec = OpenAPISpecification.from_file(test_files_path / "complex_types_openapi_service.json")
-        converter = CohereSchemaConverter()
-        functions = converter.convert(spec)
+        converter = CohereSchemaConverter(schema=spec)
+        functions = converter.convert()
         assert functions
         assert len(functions) == 1
         function = functions[0]

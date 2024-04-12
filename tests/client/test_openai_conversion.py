@@ -1,7 +1,7 @@
 import pytest
 
-from openapi_service_client.schema_converter import AnthropicSchemaConverter
-from openapi_service_client.schema_converter.openai import OpenAISchemaConverter
+from openapi_service_client.providers.anthropic import AnthropicSchemaConverter
+from openapi_service_client.providers.openai import OpenAISchemaConverter
 from openapi_service_client.spec import OpenAPISpecification
 
 
@@ -10,8 +10,10 @@ class TestOpenAPISchemaConversion:
     @pytest.mark.parametrize("provider", ["openai", "anthropic"])
     def test_serperdev(self, test_files_path, provider):
         spec = OpenAPISpecification.from_file(test_files_path / "serper.yaml")
-        converter = OpenAISchemaConverter() if provider == "openai" else AnthropicSchemaConverter()
-        functions = converter.convert(spec)
+        converter = (
+            OpenAISchemaConverter(schema=spec) if provider == "openai" else AnthropicSchemaConverter(schema=spec)
+        )
+        functions = converter.convert()
         assert functions
         assert len(functions) == 1
         function = functions[0]
@@ -27,8 +29,10 @@ class TestOpenAPISchemaConversion:
     @pytest.mark.parametrize("provider", ["openai", "anthropic"])
     def test_github(self, test_files_path, provider: str):
         spec = OpenAPISpecification.from_file(test_files_path / "github_compare.yml")
-        converter = OpenAISchemaConverter() if provider == "openai" else AnthropicSchemaConverter()
-        functions = converter.convert(spec)
+        converter = (
+            OpenAISchemaConverter(schema=spec) if provider == "openai" else AnthropicSchemaConverter(schema=spec)
+        )
+        functions = converter.convert()
         assert functions
         assert len(functions) == 1
         function = functions[0]
@@ -59,8 +63,10 @@ class TestOpenAPISchemaConversion:
     @pytest.mark.parametrize("provider", ["openai", "anthropic"])
     def test_complex_types(self, test_files_path, provider: str):
         spec = OpenAPISpecification.from_file(test_files_path / "complex_types_openapi_service.json")
-        converter = OpenAISchemaConverter() if provider == "openai" else AnthropicSchemaConverter()
-        functions = converter.convert(spec)
+        converter = (
+            OpenAISchemaConverter(schema=spec) if provider == "openai" else AnthropicSchemaConverter(schema=spec)
+        )
+        functions = converter.convert()
         assert functions
         assert len(functions) == 1
         function = functions[0]

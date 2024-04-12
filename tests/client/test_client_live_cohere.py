@@ -5,8 +5,7 @@ import pytest
 
 from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
-from openapi_service_client.config import CoherePayloadExtractor
-from openapi_service_client.schema_converter import CohereSchemaConverter
+from openapi_service_client.providers import CohereLLMProvider
 
 # Copied from Cohere's documentation
 preamble = """
@@ -31,13 +30,12 @@ class TestClientLiveCohere:
         config = (
             builder.with_openapi_spec(test_files_path / "serper.yaml")
             .with_credentials(os.getenv("SERPERDEV_API_KEY"))
-            .with_provider(CoherePayloadExtractor())
+            .with_provider(CohereLLMProvider())
             .build()
         )
         client = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
 
-        converter = CohereSchemaConverter()
-        tool_choices = converter.convert(config.get_openapi_spec())
+        tool_choices = config.get_tools_definitions()
         response = client.chat(
             model="command-r",
             preamble=preamble,
@@ -53,14 +51,11 @@ class TestClientLiveCohere:
     def test_github(self, test_files_path):
         builder = ClientConfigurationBuilder()
         config = (
-            builder.with_openapi_spec(test_files_path / "github_compare.yml")
-            .with_provider(CoherePayloadExtractor())
-            .build()
+            builder.with_openapi_spec(test_files_path / "github_compare.yml").with_provider(CohereLLMProvider()).build()
         )
 
         client = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
-        converter = CohereSchemaConverter()
-        tool_choices = converter.convert(config.get_openapi_spec())
+        tool_choices = config.get_tools_definitions()
         response = client.chat(
             model="command-r",
             preamble=preamble,

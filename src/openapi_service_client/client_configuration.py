@@ -1,19 +1,18 @@
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Protocol, Union
+from typing import Any, Dict, List, Optional, Protocol, Union
 
 from openapi_service_client.config import (
     ApiKeyAuthentication,
     AuthenticationStrategy,
-    FunctionPayloadExtractor,
     HTTPAuthentication,
     HttpClientConfig,
     OAuthAuthentication,
     PassThroughAuthentication,
 )
 from openapi_service_client.http_client import AbstractHttpClient, RequestsHttpClient
-from openapi_service_client.providers.llm_provider import LLMProvider, OpenAILLMProvider
-from openapi_service_client.schema_converter import OpenAPISpecificationConverter
+from openapi_service_client.providers import LLMProvider, OpenAILLMProvider
+from openapi_service_client.providers.payload_extractor import FunctionPayloadExtractor
 from openapi_service_client.spec import OpenAPISpecification
 
 
@@ -31,10 +30,7 @@ class ClientConfiguration(Protocol):
     def get_openapi_spec(self) -> OpenAPISpecification:
         pass
 
-    def get_provider(self) -> LLMProvider:
-        pass
-
-    def get_spec_converter(self) -> OpenAPISpecificationConverter:
+    def get_tools_definitions(self) -> List[Dict[str, Any]]:
         pass
 
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
@@ -72,11 +68,8 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
     def get_http_client_config(self) -> HttpClientConfig:
         return self.http_client_config
 
-    def get_provider(self) -> FunctionPayloadExtractor:
-        return self.provider
-
-    def get_spec_converter(self) -> OpenAPISpecificationConverter:
-        return self.provider.get_schema_converter()
+    def get_tools_definitions(self) -> List[Dict[str, Any]]:
+        return self.provider.get_schema_converter(self.openapi_spec).convert()
 
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
         return self.provider.get_payload_extractor()

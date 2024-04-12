@@ -14,7 +14,7 @@ class OpenAPIServiceClient:
         self.openapi_spec = client_config.get_openapi_spec()
         self.http_client = client_config.get_http_client()
         self.request_builder = RequestBuilder(client_config)
-        self.provider = client_config.get_provider()
+        self.payload_extractor = client_config.get_payload_extractor()
 
     def get_operations(self) -> Dict[str, Dict[str, Operation]]:
         operations: Dict[str, Dict[str, Operation]] = {}
@@ -26,12 +26,11 @@ class OpenAPIServiceClient:
         return operations
 
     def invoke(self, function_payload: Dict[str, Any]) -> Any:
-        payload_extractor = self.provider.get_payload_extractor()
-        fn_invocation_payload = payload_extractor.extract_function_invocation(function_payload)
+        fn_invocation_payload = self.payload_extractor.extract_function_invocation(function_payload)
         if not fn_invocation_payload:
             raise OpenAPIClientError(
                 f"Failed to extract function invocation payload from {function_payload} using "
-                f"{payload_extractor.__class__.__name__}. Ensure the payload format matches the expected "
+                f"{self.payload_extractor.__class__.__name__}. Ensure the payload format matches the expected "
                 "structure for the designated LLM extractor."
             )
         # fn_invocation_payload, if not empty, guaranteed to have "name" and "arguments" keys from here on
