@@ -1,9 +1,7 @@
 from typing import Any, Dict
 
 from openapi_service_client.client_configuration import ClientConfiguration
-from openapi_service_client.http_client import VALID_HTTP_METHODS
 from openapi_service_client.request_builder import RequestBuilder
-from openapi_service_client.spec import Operation
 
 
 class OpenAPIServiceClient:
@@ -15,15 +13,6 @@ class OpenAPIServiceClient:
         self.http_client = client_config.get_http_client()
         self.request_builder = RequestBuilder(client_config)
         self.payload_extractor = client_config.get_payload_extractor()
-
-    def get_operations(self) -> Dict[str, Dict[str, Operation]]:
-        operations: Dict[str, Dict[str, Operation]] = {}
-        for path, path_item in self.openapi_spec.get_paths().items():
-            operations[path] = {}
-            for method, operation in path_item.items():
-                if method in VALID_HTTP_METHODS:
-                    operations[path][method] = operation
-        return operations
 
     def invoke(self, function_payload: Dict[str, Any]) -> Any:
         fn_invocation_payload = self.payload_extractor.extract_function_invocation(function_payload)
