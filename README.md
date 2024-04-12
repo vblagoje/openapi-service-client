@@ -79,9 +79,9 @@ from openapi_service_client.schema_converter import AnthropicSchemaConverter
 
 builder = ClientConfigurationBuilder()
 config = (
-    builder.with_openapi_spec("path/to/serper.yaml")  
+    builder.with_openapi_spec("path/to/serper.yaml")
     .with_credentials(os.getenv("SERPERDEV_API_KEY"))
-    .with_payload_extractor(AnthropicPayloadExtractor())
+    .with_provider(AnthropicPayloadExtractor())
     .build()
 )
 
@@ -116,7 +116,7 @@ builder = ClientConfigurationBuilder()
 config = (
     builder.with_openapi_spec("path/to/serper.yaml")
     .with_credentials(os.getenv("SERPERDEV_API_KEY"))
-    .with_payload_extractor(CoherePayloadExtractor())
+    .with_provider(CoherePayloadExtractor())
     .build()
 )
 

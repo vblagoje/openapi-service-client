@@ -5,7 +5,6 @@ from openai import OpenAI
 
 from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
-from openapi_service_client.schema_converter import OpenAISchemaConverter
 
 
 class TestClientLiveOpenAPI:
@@ -20,8 +19,7 @@ class TestClientLiveOpenAPI:
             .build()
         )
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        converter = OpenAISchemaConverter()
-        tool_choice = converter.convert(config.get_openapi_spec())
+        tool_choice = config.get_spec_converter().convert(config.get_openapi_spec())
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
@@ -39,8 +37,7 @@ class TestClientLiveOpenAPI:
         config = builder.with_openapi_spec(test_files_path / "github_compare.yml").build()
 
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        converter = OpenAISchemaConverter()
-        tool_choice = converter.convert(config.get_openapi_spec())
+        tool_choice = config.get_spec_converter().convert(config.get_openapi_spec())
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[

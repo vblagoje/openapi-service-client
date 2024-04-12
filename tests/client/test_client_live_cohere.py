@@ -31,7 +31,7 @@ class TestClientLiveCohere:
         config = (
             builder.with_openapi_spec(test_files_path / "serper.yaml")
             .with_credentials(os.getenv("SERPERDEV_API_KEY"))
-            .with_payload_extractor(CoherePayloadExtractor())
+            .with_provider(CoherePayloadExtractor())
             .build()
         )
         client = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
@@ -54,7 +54,7 @@ class TestClientLiveCohere:
         builder = ClientConfigurationBuilder()
         config = (
             builder.with_openapi_spec(test_files_path / "github_compare.yml")
-            .with_payload_extractor(CoherePayloadExtractor())
+            .with_provider(CoherePayloadExtractor())
             .build()
         )
 

@@ -9,10 +9,11 @@ from openapi_service_client.config import (
     HTTPAuthentication,
     HttpClientConfig,
     OAuthAuthentication,
-    OpenAIPayloadExtractor,
     PassThroughAuthentication,
 )
 from openapi_service_client.http_client import AbstractHttpClient, RequestsHttpClient
+from openapi_service_client.providers.llm_provider import LLMProvider, OpenAILLMProvider
+from openapi_service_client.schema_converter import OpenAPISpecificationConverter
 from openapi_service_client.spec import OpenAPISpecification
 
 
@@ -30,6 +31,12 @@ class ClientConfiguration(Protocol):
     def get_openapi_spec(self) -> OpenAPISpecification:
         pass
 
+    def get_provider(self) -> LLMProvider:
+        pass
+
+    def get_spec_converter(self) -> OpenAPISpecificationConverter:
+        pass
+
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
         pass
 
@@ -42,7 +49,7 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
         credentials: Optional[Union[str, Dict[str, Any], AuthenticationStrategy]] = None,
         http_client: Optional[AbstractHttpClient] = None,
         http_client_config: Optional[HttpClientConfig] = None,
-        payload_extractor: Optional[FunctionPayloadExtractor] = None,
+        provider: Optional[LLMProvider] = None,
     ):
         if isinstance(openapi_spec, (str, Path)) and os.path.isfile(openapi_spec):
             self.openapi_spec = OpenAPISpecification.from_file(openapi_spec)
@@ -54,7 +61,7 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
         self.credentials = credentials
         self.http_client = http_client or RequestsHttpClient(http_client_config)
         self.http_client_config = http_client_config or HttpClientConfig()
-        self.payload_extractor = payload_extractor or OpenAIPayloadExtractor()
+        self.provider = provider or OpenAILLMProvider()
 
     def get_openapi_spec(self) -> OpenAPISpecification:
         return self.openapi_spec
@@ -65,8 +72,14 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
     def get_http_client_config(self) -> HttpClientConfig:
         return self.http_client_config
 
+    def get_provider(self) -> FunctionPayloadExtractor:
+        return self.provider
+
+    def get_spec_converter(self) -> OpenAPISpecificationConverter:
+        return self.provider.get_schema_converter()
+
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
-        return self.payload_extractor
+        return self.provider.get_payload_extractor()
 
     def get_auth_config(self) -> AuthenticationStrategy:
         if self.credentials is None:
@@ -116,7 +129,7 @@ class ClientConfigurationBuilder:
         self._credentials: Optional[Union[str, Dict[str, Any], AuthenticationStrategy]] = None
         self._http_client: Optional[AbstractHttpClient] = None
         self._http_client_config: Optional[HttpClientConfig] = None
-        self._payload_extractor: Optional[FunctionPayloadExtractor] = None
+        self._provider: Optional[LLMProvider] = None
 
     def with_openapi_spec(self, openapi_spec: Union[str, Path]) -> "ClientConfigurationBuilder":
         self._openapi_spec = openapi_spec
@@ -136,8 +149,8 @@ class ClientConfigurationBuilder:
         self._http_client_config = http_client_config
         return self
 
-    def with_payload_extractor(self, payload_extractor: FunctionPayloadExtractor) -> "ClientConfigurationBuilder":
-        self._payload_extractor = payload_extractor
+    def with_provider(self, provider: LLMProvider) -> "ClientConfigurationBuilder":
+        self._provider = provider
         return self
 
     def build(self) -> ClientConfiguration:
@@ -149,5 +162,5 @@ class ClientConfigurationBuilder:
             credentials=self._credentials,
             http_client=self._http_client,
             http_client_config=self._http_client_config,
-            payload_extractor=self._payload_extractor,
+            provider=self._provider,
         )

@@ -18,7 +18,7 @@ class TestClientLiveAnthropic:
         config = (
             builder.with_openapi_spec(test_files_path / "serper.yaml")
             .with_credentials(os.getenv("SERPERDEV_API_KEY"))
-            .with_payload_extractor(AnthropicPayloadExtractor())
+            .with_provider(AnthropicPayloadExtractor())
             .build()
         )
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -41,7 +41,7 @@ class TestClientLiveAnthropic:
         builder = ClientConfigurationBuilder()
         config = (
             builder.with_openapi_spec(test_files_path / "github_compare.yml")
-            .with_payload_extractor(AnthropicPayloadExtractor())
+            .with_provider(AnthropicPayloadExtractor())
             .build()
         )
 
