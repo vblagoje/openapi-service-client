@@ -4,6 +4,7 @@
 		"title": "Order Service",
 		"version": "1.0.0"
 	},
+	"servers": [{"url": "http://localhost"}],
 	"paths": {
 		"/orders": {
 			"post": {

@@ -12,10 +12,10 @@ class TestClientLiveAnthropic:
 
     @pytest.mark.skipif("SERPERDEV_API_KEY" not in os.environ, reason="SERPERDEV_API_KEY not set")
     @pytest.mark.skipif("ANTHROPIC_API_KEY" not in os.environ, reason="ANTHROPIC_API_KEY not set")
-    def test_serperdev(self, test_files_path):
+    def test_serperdev(self):
         builder = ClientConfigurationBuilder()
         config = (
-            builder.with_openapi_spec(test_files_path / "serper.yaml")
+            builder.with_openapi_spec("https://bit.ly/serper_dev_spec_yaml")
             .with_credentials(os.getenv("SERPERDEV_API_KEY"))
             .with_provider(AnthropicLLMProvider())
             .build()

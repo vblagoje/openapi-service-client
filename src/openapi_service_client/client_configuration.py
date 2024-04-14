@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Union
+from urllib.parse import urlparse
 
 from openapi_service_client.config import (
     ApiKeyAuthentication,
@@ -51,6 +52,11 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
             self.openapi_spec = OpenAPISpecification.from_file(openapi_spec)
         elif isinstance(openapi_spec, dict):
             self.openapi_spec = OpenAPISpecification.from_dict(openapi_spec)
+        elif isinstance(openapi_spec, str):
+            if self.is_valid_http_url(openapi_spec):
+                self.openapi_spec = OpenAPISpecification.from_url(openapi_spec)
+            else:
+                self.openapi_spec = OpenAPISpecification.from_str(openapi_spec)
         else:
             raise ValueError("Invalid OpenAPI specification format. Expected file path or dictionary.")
 
@@ -114,6 +120,11 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
             return OAuthAuthentication(access_token=credentials["access_token"], token_type=token_type)
         else:
             raise ValueError("Unable to create authentication from provided credentials: {credentials}")
+
+    def is_valid_http_url(self, url: str) -> bool:
+        """Check if a URL is a valid HTTP/HTTPS URL."""
+        r = urlparse(url)
+        return all([r.scheme in ["http", "https"], r.netloc])
 
 
 class ClientConfigurationBuilder:

@@ -31,9 +31,15 @@ pip install openapi-service-client
 
 ## Usage
 
-To effectively use the `OpenAPIServiceClient`, follow these steps to configure and invoke operations on your target API defined by an OpenAPI specification.
+To use `OpenAPIServiceClient`, follow these steps to configure and invoke operations on your target API (aka tool/service) defined by an OpenAPI specification.
 
 ### OpenAI Example
+
+To run the OpenAI example below, you need:
+1) Install openai package (`pip install openai`)
+2) OpenAI API key. You can obtain an OpenAI API key by signing up for an account on the OpenAI platform. See https://platform.openai.com/ for more details.
+3) SerperDev API key. This api key is required to access the SerperDev Google search engine API. See https://serper.dev/ for a quick signup and free credits. 
+
 
 ```python
 import os
@@ -43,7 +49,7 @@ from openapi_service_client.client_configuration import ClientConfigurationBuild
 
 builder = ClientConfigurationBuilder()
 config = (
-    builder.with_openapi_spec("path/to/serper.yaml")
+    builder.with_openapi_spec("https://bit.ly/serper_dev_spec_yaml")
     .with_credentials(os.getenv("SERPERDEV_API_KEY"))
     .build()
 )
@@ -60,11 +66,17 @@ response = client.chat.completions.create(
 tool_payloads = response.choices[0].message.tool_calls
 serper_api = OpenAPIServiceClient(config)
 response = serper_api.invoke(tool_payloads[0].to_dict())
-
-assert "inventions" in str(response)
+print(response)
 ```
 
 ### Anthropic Example
+
+To run the Anthropic Claude Opus example below, you need:
+
+1) Install anthropic package (`pip install anthropic`)
+2) Anthropic API key. You can obtain an Anthropic API key by signing up for an account on the Anthropic platform. See https://www.anthropic.com/ for more details.
+3) SerperDev API key. This api key is required to access the SerperDev Google search engine API. See https://serper.dev/ for a quick signup and free credits. 
+
 
 ```python
 import os
@@ -76,7 +88,7 @@ from openapi_service_client.providers import AnthropicLLMProvider
 
 builder = ClientConfigurationBuilder()
 config = (
-    builder.with_openapi_spec("path/to/serper.yaml")
+    builder.with_openapi_spec("https://bit.ly/serper_dev_spec_yaml")
     .with_credentials(os.getenv("SERPERDEV_API_KEY"))
     .with_provider(AnthropicLLMProvider())
     .build()
@@ -95,10 +107,16 @@ response = client.beta.tools.messages.create(
 tool_payload = response.content[1].to_dict()
 serper_api = OpenAPIServiceClient(config)
 response = serper_api.invoke(tool_payload)
-
-assert "inventions" in str(response)
+print(response)
 ```
 ### Cohere Example
+
+To run the Cohere Command-R example below, you need:
+
+1) Install cohere package (`pip install cohere`)
+2) Cohere API key. You can obtain Cohere API key by signing up for an account on the Cohere platform. See https://cohere.ai/ for more details.
+3) SerperDev API key. This api key is required to access the SerperDev Google search engine API. See https://serper.dev/ for a quick signup and free credits. 
+
 
 ```python
 import os
@@ -109,7 +127,7 @@ from openapi_service_client.providers import CohereLLMProvider
 
 builder = ClientConfigurationBuilder()
 config = (
-    builder.with_openapi_spec("path/to/serper.yaml")
+    builder.with_openapi_spec("https://bit.ly/serper_dev_spec_yaml")
     .with_credentials(os.getenv("SERPERDEV_API_KEY"))
     .with_provider(CohereLLMProvider())
     .build()
@@ -128,8 +146,7 @@ response = client.chat(
 tool_payload = response.tool_calls[0].dict()
 serper_api = OpenAPIServiceClient(config)
 response = serper_api.invoke(tool_payload)
-
-assert "inventions" in str(response)
+print(response)
 ```
 
 ## How It Works

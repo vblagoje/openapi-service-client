@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+import requests
 import yaml
 
 from openapi_service_client.http_client import VALID_HTTP_METHODS
@@ -22,19 +23,37 @@ class OpenAPISpecification:
         return parser
 
     @classmethod
-    def from_file(cls, spec_file: Union[str, Path]) -> "OpenAPISpecification":
-        loaded_spec: Dict[str, Any]
-        with open(spec_file, encoding="utf-8") as file:
-            content = file.read()
+    def from_str(cls, content: str) -> "OpenAPISpecification":
+        if not isinstance(content, str):
+            raise ValueError(f"Invalid schema {content}. Provide a valid OpenAPI schema.")
+        if "openapi" not in content or "paths" not in content or "servers" not in content:
+            raise ValueError(
+                "Invalid OpenAPI specification format. See https://swagger.io/specification/ for details.", content
+            )
         try:
             loaded_spec = json.loads(content)
         except json.JSONDecodeError:
             try:
                 loaded_spec = yaml.safe_load(content)
             except yaml.YAMLError as e:
-                raise ValueError("File cannot be decoded as JSON or YAML: " + str(e)) from e
-
+                raise ValueError("Content cannot be decoded as JSON or YAML: " + str(e)) from e
         return cls(loaded_spec)
+
+    @classmethod
+    def from_file(cls, spec_file: Union[str, Path]) -> "OpenAPISpecification":
+        with open(spec_file, encoding="utf-8") as file:
+            content = file.read()
+        return cls.from_str(content)
+
+    @classmethod
+    def from_url(cls, url: str) -> "OpenAPISpecification":
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            content = response.text
+        except requests.RequestException as e:
+            raise ConnectionError(f"Failed to fetch the specification from URL: {url}. {e!s}") from e
+        return cls.from_str(content)
 
     def get_paths(self) -> Dict[str, Dict[str, Any]]:
         return self.spec_dict.get("paths", {})
