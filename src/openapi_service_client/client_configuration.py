@@ -42,7 +42,7 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
 
     def __init__(
         self,
-        openapi_spec: Union[str, Path],
+        openapi_spec: Union[str, Path, Dict[str, Any]],
         credentials: Optional[Union[str, Dict[str, Any], AuthenticationStrategy]] = None,
         http_client: Optional[AbstractHttpClient] = None,
         http_client_config: Optional[HttpClientConfig] = None,
@@ -129,13 +129,13 @@ class _DefaultOpenAPIServiceClientConfiguration(ClientConfiguration):
 
 class ClientConfigurationBuilder:
     def __init__(self):
-        self._openapi_spec: Union[str, Path, None] = None
+        self._openapi_spec: Union[str, Path, Dict[str, Any], None] = None
         self._credentials: Optional[Union[str, Dict[str, Any], AuthenticationStrategy]] = None
         self._http_client: Optional[AbstractHttpClient] = None
         self._http_client_config: Optional[HttpClientConfig] = None
         self._provider: Optional[LLMProvider] = None
 
-    def with_openapi_spec(self, openapi_spec: Union[str, Path]) -> "ClientConfigurationBuilder":
+    def with_openapi_spec(self, openapi_spec: Union[str, Path, Dict[str, Any]]) -> "ClientConfigurationBuilder":
         self._openapi_spec = openapi_spec
         return self
 

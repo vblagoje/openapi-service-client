@@ -7,18 +7,18 @@ OpenAPI Service Client is a Python library that enables effortless integration b
 
 ## Motivation
 
-The OpenAPI Service Client library aims to simplify the process of invoking OpenAPI-defined services using function calling payloads from various LLM providers. By abstracting away the complexities of making HTTP requests, handling authentication, preparing invocation payloads and processing responses, it allows users to easily invoke underlying services regardless of the LLM provider.
+The OpenAPI Service Client library aims to simplify the process of invoking OpenAPI-defined services using function calling payloads from various LLM providers. By abstracting away the complexities of making HTTP requests, handling authentication, preparing invocation payloads and processing responses, it allows users to easily invoke underlying services with LLM generated function calls.
 
-The library supports multiple LLM providers, including OpenAI, Anthropic, and Cohere, making it a versatile tool for integrating LLMs with OpenAPI services. It also provides a flexible and extensible architecture that allows users to add support for additional LLM providers and function-calling payload formats.
+The library supports multiple LLM providers, including OpenAI, Anthropic, and Cohere, streamlining the process of integrating LLMs with OpenAPI services. It also provides a flexible and extensible architecture that allows users to add support for additional LLM providers and function-calling formats.
 
 ## Features
 
-- Easy integration with LLM-generated function calls using various function-calling JSON formats
+- Easy integration with LLM-generated function calls
 - Support for various LLM providers, including OpenAI, Anthropic, and Cohere
 - Automatic handling of REST invocations based on OpenAPI specifications
 - Support for various authentication strategies, including API key, HTTP authentication, and OAuth2
 - Flexible configuration options for adapting the client behavior
-- Extensible architecture for adding support for additional LLM providers and function-calling payload formats
+- Extensible architecture for adding support for additional LLM providers and function-calling formats
 
 
 ## Installation
