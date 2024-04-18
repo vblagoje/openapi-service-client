@@ -7,9 +7,9 @@ OpenAPI Service Client is a Python library that enables effortless integration b
 
 ## Motivation
 
-The OpenAPI Service Client library aims to simplify the process of invoking OpenAPI-defined services using function calling payloads from various LLM providers. By abstracting away the complexities of making HTTP requests, handling authentication, preparing invocation payloads and processing responses, it allows users to easily invoke underlying services with LLM generated function calls.
+The OpenAPI Service Client library aims to simplify the process of invoking OpenAPI-defined services using function-calling payloads from various LLM providers. By abstracting away the complexities of making HTTP requests, handling authentication, preparing invocation payloads, and processing responses, it allows users to easily invoke underlying services with LLM-generated function calls.
 
-The library supports multiple LLM providers, including OpenAI, Anthropic, and Cohere, streamlining the process of integrating LLMs with OpenAPI services. It also provides a flexible and extensible architecture that allows users to add support for additional LLM providers and function-calling formats.
+The library supports multiple LLM providers, including OpenAI, Anthropic, and Cohere. Each LLM provider uses a unique function-calling schema definition format; OpenAPI Service Client abstracts these differences, enabling a uniform approach to service invocation. Additionally, the library provides a flexible and extensible architecture that allows users to add support for additional LLM providers and function-calling formats.
 
 ## Features
 
