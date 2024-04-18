@@ -47,6 +47,7 @@ from openai import OpenAI
 from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
 
+# Configure the API client
 builder = ClientConfigurationBuilder()
 config = (
     builder.with_openapi_spec("https://bit.ly/serper_dev_spec_yaml")
@@ -54,6 +55,10 @@ config = (
     .build()
 )
 
+# Initialize the OpenAPIServiceClient with configuration
+serper_api = OpenAPIServiceClient(config)
+
+# Setup the OpenAI API client and send the chat message
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 tool_choice = config.get_tools_definitions()
 response = client.chat.completions.create(
@@ -63,8 +68,8 @@ response = client.chat.completions.create(
     tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
 )
 
+# Extract the function-calling payload from response and invoke the service
 tool_payloads = response.choices[0].message.tool_calls
-serper_api = OpenAPIServiceClient(config)
 response = serper_api.invoke(tool_payloads[0].to_dict())
 print(response)
 ```
@@ -85,7 +90,7 @@ from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
 from openapi_service_client.providers import AnthropicLLMProvider
 
-
+# Configure the API client
 builder = ClientConfigurationBuilder()
 config = (
     builder.with_openapi_spec("https://bit.ly/serper_dev_spec_yaml")
@@ -94,18 +99,22 @@ config = (
     .build()
 )
 
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-tool_choice = config.get_tools_definitions()
+# Initialize the OpenAPIServiceClient with configuration
+serper_api = OpenAPIServiceClient(config)
 
+# Setup the Anthropic API client and send the chat message
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+# Create a message request using the Anthropic API client
 response = client.beta.tools.messages.create(
     model="claude-3-opus-20240229",
     max_tokens=1024,
-    tools=[tool_choice[0]],
+    tools=config.get_tools_definitions(),
     messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
 )
 
+# Extract the function-calling payload from the response and invoke the service
 tool_payload = response.content[1].to_dict()
-serper_api = OpenAPIServiceClient(config)
 response = serper_api.invoke(tool_payload)
 print(response)
 ```
@@ -125,6 +134,7 @@ from openapi_service_client.client import OpenAPIServiceClient
 from openapi_service_client.client_configuration import ClientConfigurationBuilder
 from openapi_service_client.providers import CohereLLMProvider
 
+# Configure the API client
 builder = ClientConfigurationBuilder()
 config = (
     builder.with_openapi_spec("https://bit.ly/serper_dev_spec_yaml")
@@ -133,9 +143,14 @@ config = (
     .build()
 )
 
+# Initialize the OpenAPIServiceClient with configuration
+serper_api = OpenAPIServiceClient(config)
+
+# Setup the Cohere client 
 client = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
 tool_choices = config.get_tools_definitions()
 
+# And send the chat message
 response = client.chat(
     model="command-r",
     preamble="A preamble aka system prompt goes here.",
@@ -143,8 +158,8 @@ response = client.chat(
     message="Do a google search: Who was Nikola Tesla?",
 )
 
+# Extract the function-calling payload and invoke the service
 tool_payload = response.tool_calls[0].dict()
-serper_api = OpenAPIServiceClient(config)
 response = serper_api.invoke(tool_payload)
 print(response)
 ```
