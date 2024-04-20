@@ -1,5 +1,4 @@
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Protocol
 
 import requests
 
@@ -17,8 +16,7 @@ VALID_HTTP_METHODS = [
 ]
 
 
-class AbstractHttpClient(ABC):
-    @abstractmethod
+class AbstractHttpClient(Protocol):
     def send_request(self, request: Dict[str, Any]) -> Any:
         pass
 
