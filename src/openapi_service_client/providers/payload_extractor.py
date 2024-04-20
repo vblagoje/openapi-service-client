@@ -1,7 +1,7 @@
 import dataclasses
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class FunctionPayloadExtractor(ABC):
@@ -31,8 +31,8 @@ class FunctionPayloadExtractor(ABC):
         pass
 
     def search(self, payload: Any) -> Dict[str, Any]:
-        if self.is_pydantic(payload):
-            payload = payload.dict()
+        if to_dict_method := self.is_dictable(payload):  # noqa F841
+            payload = payload.to_dict_method()
         elif dataclasses.is_dataclass(payload):
             payload = dataclasses.asdict(payload)
 
@@ -52,9 +52,12 @@ class FunctionPayloadExtractor(ABC):
 
         return {}
 
-    def is_pydantic(self, obj: Any) -> bool:
-        # pydantic v1 and v2 models have a dict method that can be used to convert the model to a dictionary
-        return hasattr(obj, "dict") and callable(obj.dict)
+    def is_dictable(self, obj: Any, method_names: Optional[List[str]] = None) -> str:
+        method_names = method_names or ["model_dump", "dict"]  # first look for pydantic v2 then pydantic v1
+        for attr in method_names:
+            if hasattr(obj, attr) and callable(getattr(obj, attr)):
+                return attr
+        return ""
 
 
 class GenericPayloadExtractor(FunctionPayloadExtractor):
