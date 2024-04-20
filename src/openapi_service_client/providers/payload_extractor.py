@@ -1,4 +1,5 @@
 import dataclasses
+import json
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
@@ -64,11 +65,14 @@ class GenericPayloadExtractor(FunctionPayloadExtractor):
         fields_and_values = self.search(payload)
         if fields_and_values:
             arguments = fields_and_values.get(self.arguments_field_name)
-            if not isinstance(arguments, dict):
+            if not isinstance(arguments, (str, dict)):
                 raise ValueError(
-                    f"Invalid {self.arguments_field_name} type {type(arguments)} for function call, expected dict"
+                    f"Invalid {self.arguments_field_name} type {type(arguments)} for function call, expected str/dict"
                 )
-            return {"name": fields_and_values.get("name"), "arguments": arguments}
+            return {
+                "name": fields_and_values.get("name"),
+                "arguments": json.loads(arguments) if isinstance(arguments, str) else arguments,
+            }
         return {}
 
     def required_fields(self) -> List[str]:

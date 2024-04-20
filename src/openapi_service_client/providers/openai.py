@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -6,7 +5,7 @@ import jsonref
 
 from openapi_service_client.providers.converter import OpenAPISpecificationConverter
 from openapi_service_client.providers.llm_provider import LLMProvider
-from openapi_service_client.providers.payload_extractor import FunctionPayloadExtractor
+from openapi_service_client.providers.payload_extractor import FunctionPayloadExtractor, GenericPayloadExtractor
 from openapi_service_client.spec import OpenAPISpecification
 
 MIN_REQUIRED_OPENAPI_SPEC_VERSION = 3
@@ -14,27 +13,10 @@ MIN_REQUIRED_OPENAPI_SPEC_VERSION = 3
 logger = logging.getLogger(__name__)
 
 
-class OpenAIPayloadExtractor(FunctionPayloadExtractor):
-    def extract_function_invocation(self, payload: Any) -> Dict[str, Any]:
-        fields_and_values = self.search(payload)
-        if fields_and_values:
-            args = fields_and_values.get("arguments")
-            if not isinstance(args, (str, dict)):
-                raise ValueError(f"Invalid arguments type {type(args)} for OpenAI function call, expected str or dict")
-            return {
-                "name": fields_and_values.get("name"),
-                "arguments": json.loads(args) if isinstance(args, str) else args,
-            }
-        return {}
-
-    def required_fields(self) -> List[str]:
-        return ["name", "arguments"]
-
-
 class OpenAILLMProvider(LLMProvider):
 
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
-        return OpenAIPayloadExtractor()
+        return GenericPayloadExtractor(arguments_field_name="arguments")
 
     def get_schema_converter(self, openapi_spec: OpenAPISpecification) -> OpenAPISpecificationConverter:
         return OpenAISchemaConverter(schema=openapi_spec)

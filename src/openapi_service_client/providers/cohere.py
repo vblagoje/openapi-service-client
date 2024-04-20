@@ -105,20 +105,11 @@ class CohereSchemaConverter(OpenAPISpecificationConverter):
             raise ValueError(f"Unsupported schema type {schema_type}")
 
 
-class CoherePayloadExtractor(GenericPayloadExtractor):
-    """
-    Extracts the function name and arguments from the Cohere generated function call payload.
-    See https://docs.cohere.com/docs/tool-use for more information.
-    """
-
-    def __init__(self):
-        super().__init__(arguments_field_name="parameters")
-
-
 class CohereLLMProvider(LLMProvider):
 
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
-        return CoherePayloadExtractor()
+        # See https://docs.cohere.com/docs/tool-use for more information.
+        return GenericPayloadExtractor(arguments_field_name="parameters")
 
     def get_schema_converter(self, openapi_spec: OpenAPISpecification) -> OpenAPISpecificationConverter:
         return CohereSchemaConverter(schema=openapi_spec)

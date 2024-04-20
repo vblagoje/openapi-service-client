@@ -13,13 +13,9 @@ The library supports multiple LLM providers, including OpenAI, Anthropic, and Co
 
 ## Features
 
-- Easy integration with LLM-generated function calls
-- Support for various LLM providers, including OpenAI, Anthropic, and Cohere
-- Automatic handling of REST invocations based on OpenAPI specifications
-- Support for various authentication strategies, including API key, HTTP authentication, and OAuth2
-- Flexible configuration options for adapting the client behavior
-- Extensible architecture for adding support for additional LLM providers and function-calling formats
-
+- **Seamless LLM Integration**: Easily integrate with LLM-generated function calls for various providers, including OpenAI, Anthropic, and Cohere.
+- **OpenAPI Compliance**: Automatically handle REST service invocations and support various authentication strategies (API key, HTTP authentication, OAuth2).
+- **Customizable and Extensible**: Offers flexible configuration options and an extensible architecture to accommodate additional LLM providers and function-calling formats.
 
 ## Installation
 
@@ -68,7 +64,8 @@ response = client.chat.completions.create(
     tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
 )
 
-# Extract the function-calling payload from response and invoke the service
+# Simply pass the LLM response and invoke the service
+# The function-calling payload is extracted and processed automatically
 service_response = serper_api.invoke(response)
 print(service_response)
 ```
@@ -112,7 +109,8 @@ response = client.beta.tools.messages.create(
     messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
 )
 
-# Extract the function-calling payload from the response and invoke the service
+# Simply pass the LLM response and invoke the service
+# The function-calling payload is extracted and processed automatically
 service_response = serper_api.invoke(response)
 print(service_response)
 ```
@@ -155,7 +153,8 @@ response = client.chat(
     message="Do a google search: Who was Nikola Tesla?",
 )
 
-# Extract the function-calling payload and invoke the service
+# Simply pass the LLM response and invoke the service
+# The function-calling payload is extracted and processed automatically
 service_response = serper_api.invoke(response)
 print(service_response)
 ```

@@ -10,25 +10,12 @@ MIN_REQUIRED_OPENAPI_SPEC_VERSION = 3
 logger = logging.getLogger(__name__)
 
 
-class AnthropicSchemaConverter(OpenAISchemaConverter):
-    def __init__(self, schema: OpenAPISpecification):
-        super().__init__(schema=schema, parameters_name="input_schema")
-
-
-class AnthropicPayloadExtractor(GenericPayloadExtractor):
-    """
-    Extracts the function name and arguments from the Anthropic generated function call payload.
-    See https://docs.anthropic.com/claude/docs/tool-use for more information.
-    """
-
-    def __init__(self):
-        super().__init__(arguments_field_name="input")
-
-
 class AnthropicLLMProvider(LLMProvider):
 
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
-        return AnthropicPayloadExtractor()
+        # See https://docs.anthropic.com/claude/docs/tool-use for more information.
+        return GenericPayloadExtractor(arguments_field_name="input")
 
     def get_schema_converter(self, openapi_spec: OpenAPISpecification) -> OpenAPISpecificationConverter:
-        return AnthropicSchemaConverter(schema=openapi_spec)
+        # anthropic is using the same conversion format as OpenAI except for the parameters name
+        return OpenAISchemaConverter(schema=openapi_spec, parameters_name="input_schema")
