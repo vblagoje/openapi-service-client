@@ -32,7 +32,6 @@ class FunctionPayloadExtractor(ABC):
     def search(self, payload: Any) -> Dict[str, Any]:
         if self.is_pydantic(payload):
             payload = payload.dict()
-
         elif dataclasses.is_dataclass(payload):
             payload = dataclasses.asdict(payload)
 
@@ -40,14 +39,9 @@ class FunctionPayloadExtractor(ABC):
             if all(field in payload for field in self.required_fields()):
                 return payload
             for _, value in payload.items():
-                if isinstance(value, (dict, list)):
-                    result = self.search(value)
-                    if result:
-                        return result
-                elif self.is_pydantic(value):
-                    result = self.search(value.dict())
-                    if result:
-                        return result
+                result = self.search(value)
+                if result:
+                    return result
 
         elif isinstance(payload, list):
             for item in payload:
@@ -57,9 +51,9 @@ class FunctionPayloadExtractor(ABC):
 
         return {}
 
-    def is_pydantic(self, payload: Any) -> bool:
+    def is_pydantic(self, obj: Any) -> bool:
         # pydantic v1 and v2 models have a dict method that can be used to convert the model to a dictionary
-        return hasattr(payload, "dict") and callable(payload.dict)
+        return hasattr(obj, "dict") and callable(obj.dict)
 
 
 class GenericPayloadExtractor(FunctionPayloadExtractor):

@@ -169,6 +169,8 @@ The client handles the REST invocation by constructing the appropriate HTTP requ
 
 By leveraging the OpenAPI specification, `OpenAPIServiceClient` eliminates the need for manual request setup and simplifies the integration process. It allows you to focus on working with LLM-generated function calls and seamlessly invoke the underlying services.
 
+Note how in the examples above, the service invocation function in `OpenAPIServiceClient` directly accepts and processes function-calling payloads from various LLM providers. The client ensures that payloads are correctly identified and extracted, regardless of the LLM source, offering a truly plug-and-play experience.
+
 ## Contributing
 
 Contributions to OpenAPI Service Client are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request on the GitHub repository.
