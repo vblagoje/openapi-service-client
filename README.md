@@ -69,9 +69,8 @@ response = client.chat.completions.create(
 )
 
 # Extract the function-calling payload from response and invoke the service
-tool_payloads = response.choices[0].message.tool_calls
-response = serper_api.invoke(tool_payloads[0].to_dict())
-print(response)
+service_response = serper_api.invoke(response)
+print(service_response)
 ```
 
 ### Anthropic Example
@@ -114,9 +113,8 @@ response = client.beta.tools.messages.create(
 )
 
 # Extract the function-calling payload from the response and invoke the service
-tool_payload = response.content[1].to_dict()
-response = serper_api.invoke(tool_payload)
-print(response)
+service_response = serper_api.invoke(response)
+print(service_response)
 ```
 ### Cohere Example
 
@@ -148,20 +146,18 @@ serper_api = OpenAPIServiceClient(config)
 
 # Setup the Cohere client 
 client = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
-tool_choices = config.get_tools_definitions()
 
 # And send the chat message
 response = client.chat(
     model="command-r",
     preamble="A preamble aka system prompt goes here.",
-    tools=tool_choices,
+    tools=config.get_tools_definitions(),
     message="Do a google search: Who was Nikola Tesla?",
 )
 
 # Extract the function-calling payload and invoke the service
-tool_payload = response.tool_calls[0].dict()
-response = serper_api.invoke(tool_payload)
-print(response)
+service_response = serper_api.invoke(response)
+print(service_response)
 ```
 
 ## How It Works

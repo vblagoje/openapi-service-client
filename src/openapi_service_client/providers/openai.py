@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class OpenAIPayloadExtractor(FunctionPayloadExtractor):
-    def extract_function_invocation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def extract_function_invocation(self, payload: Any) -> Dict[str, Any]:
         fields_and_values = self.search(payload)
         if fields_and_values:
             args = fields_and_values.get("arguments")

@@ -1,3 +1,4 @@
+import dataclasses
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
@@ -5,7 +6,7 @@ from typing import Any, Dict, List
 class FunctionPayloadExtractor(ABC):
 
     @abstractmethod
-    def extract_function_invocation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def extract_function_invocation(self, payload: Any) -> Dict[str, Any]:
         """
         Extracts the function name and arguments from the LLM generated function call payload.
 
@@ -28,13 +29,23 @@ class FunctionPayloadExtractor(ABC):
         """
         pass
 
-    def search(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def search(self, payload: Any) -> Dict[str, Any]:
+        if self.is_pydantic(payload):
+            payload = payload.dict()
+
+        elif dataclasses.is_dataclass(payload):
+            payload = dataclasses.asdict(payload)
+
         if isinstance(payload, dict):
             if all(field in payload for field in self.required_fields()):
                 return payload
             for _, value in payload.items():
-                if isinstance(value, dict):
+                if isinstance(value, (dict, list)):
                     result = self.search(value)
+                    if result:
+                        return result
+                elif self.is_pydantic(value):
+                    result = self.search(value.dict())
                     if result:
                         return result
 
@@ -43,14 +54,19 @@ class FunctionPayloadExtractor(ABC):
                 result = self.search(item)
                 if result:
                     return result
+
         return {}
+
+    def is_pydantic(self, payload: Any) -> bool:
+        # pydantic v1 and v2 models have a dict method that can be used to convert the model to a dictionary
+        return hasattr(payload, "dict") and callable(payload.dict)
 
 
 class GenericPayloadExtractor(FunctionPayloadExtractor):
     def __init__(self, arguments_field_name: str):
         self.arguments_field_name = arguments_field_name
 
-    def extract_function_invocation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def extract_function_invocation(self, payload: Any) -> Dict[str, Any]:
         fields_and_values = self.search(payload)
         if fields_and_values:
             arguments = fields_and_values.get(self.arguments_field_name)

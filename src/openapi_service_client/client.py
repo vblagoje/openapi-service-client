@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from openapi_service_client.client_configuration import ClientConfiguration
 from openapi_service_client.request_builder import RequestBuilder
@@ -14,7 +14,20 @@ class OpenAPIServiceClient:
         self.request_builder = RequestBuilder(client_config)
         self.payload_extractor = client_config.get_payload_extractor()
 
-    def invoke(self, function_payload: Dict[str, Any]) -> Any:
+    def invoke(self, function_payload: Any) -> Any:
+        """
+        Invokes a function specified in the function payload.
+
+        Function payload is traversed to extract the function name and arguments, construct a request based on an
+        OpenAPI specification, and send the request using a configured HTTP client.
+
+        Function payload can be a dictionary, dataclass, or pydantic v1 and v2 model.
+
+        :param function_payload: The function payload containing the details of the function to be invoked.
+        :returns: The response from the service after invoking the function.
+        :raises OpenAPIClientError: If the function invocation payload cannot be extracted from the function payload.
+        :raises HttpClientError: If an error occurs while sending the request and receiving the response.
+        """
         fn_invocation_payload = self.payload_extractor.extract_function_invocation(function_payload)
         if not fn_invocation_payload:
             raise OpenAPIClientError(
