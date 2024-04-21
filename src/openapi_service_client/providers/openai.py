@@ -5,7 +5,10 @@ import jsonref
 
 from openapi_service_client.providers.converter import OpenAPISpecificationConverter
 from openapi_service_client.providers.llm_provider import LLMProvider
-from openapi_service_client.providers.payload_extractor import FunctionPayloadExtractor, GenericPayloadExtractor
+from openapi_service_client.providers.payload_extractor import (
+    DefaultRecursivePayloadExtractor,
+    FunctionPayloadExtractor,
+)
 from openapi_service_client.spec import OpenAPISpecification
 
 MIN_REQUIRED_OPENAPI_SPEC_VERSION = 3
@@ -16,7 +19,7 @@ logger = logging.getLogger(__name__)
 class OpenAILLMProvider(LLMProvider):
 
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
-        return GenericPayloadExtractor(arguments_field_name="arguments")
+        return DefaultRecursivePayloadExtractor(arguments_field_name="arguments")
 
     def get_schema_converter(self, openapi_spec: OpenAPISpecification) -> OpenAPISpecificationConverter:
         return OpenAISchemaConverter(schema=openapi_spec)

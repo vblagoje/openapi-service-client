@@ -42,10 +42,9 @@ class TestClientLiveCohere:
             tools=tool_choices,
             message="Do a google search: Who was Nikola Tesla?",
         )
-        tool_payload = response.tool_calls[0].dict()
         serper_api = OpenAPIServiceClient(config)
-        response = serper_api.invoke(tool_payload)
-        assert "inventions" in str(response)
+        service_response = serper_api.invoke(response)
+        assert "inventions" in str(service_response)
 
     @pytest.mark.skipif("COHERE_API_KEY" not in os.environ, reason="COHERE_API_KEY not set")
     def test_github(self, test_files_path):
@@ -62,7 +61,6 @@ class TestClientLiveCohere:
             tools=tool_choices,
             message="Compare branches main and add_default_adapter_filters in repo haystack and owner deepset-ai",
         )
-        tool_payload = response.tool_calls[0].dict()
         serper_api = OpenAPIServiceClient(config)
-        response = serper_api.invoke(tool_payload)
-        assert "deepset" in str(response)
+        service_response = serper_api.invoke(response)
+        assert "deepset" in str(service_response)
