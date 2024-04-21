@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import jsonref
 
@@ -22,18 +22,26 @@ class OpenAILLMProvider(LLMProvider):
         return DefaultRecursivePayloadExtractor(arguments_field_name="arguments")
 
     def get_schema_converter(self, openapi_spec: OpenAPISpecification) -> OpenAPISpecificationConverter:
-        return OpenAISchemaConverter(schema=openapi_spec)
+        # each function in the OpenAI schema needs to be wrapped the below described json object
+        return OpenAISchemaConverter(schema=openapi_spec, transform_fn=lambda fn: {"type": "function", "function": fn})
 
 
 class OpenAISchemaConverter(OpenAPISpecificationConverter):
 
-    def __init__(self, schema: OpenAPISpecification, parameters_name: str = "parameters"):
+    def __init__(
+        self,
+        schema: OpenAPISpecification,
+        parameters_name: str = "parameters",
+        transform_fn: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
+    ):
         self.schema = schema
         self.parameters_name = parameters_name
+        self.transform_fn = transform_fn
 
     def convert(self) -> List[Dict[str, Any]]:
         resolved_schema = jsonref.replace_refs(self.schema.spec_dict)
-        return self._openapi_to_functions(resolved_schema)
+        fn_definitions = self._openapi_to_functions(resolved_schema)
+        return [self.transform_fn(fn) for fn in fn_definitions] if self.transform_fn else fn_definitions
 
     def _openapi_to_functions(self, service_openapi_spec: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
