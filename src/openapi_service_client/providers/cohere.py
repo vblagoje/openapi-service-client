@@ -5,7 +5,10 @@ import jsonref
 
 from openapi_service_client.providers.converter import OpenAPISpecificationConverter
 from openapi_service_client.providers.llm_provider import LLMProvider
-from openapi_service_client.providers.payload_extractor import FunctionPayloadExtractor, GenericPayloadExtractor
+from openapi_service_client.providers.payload_extractor import (
+    DefaultRecursivePayloadExtractor,
+    FunctionPayloadExtractor,
+)
 from openapi_service_client.spec import OpenAPISpecification
 
 logger = logging.getLogger(__name__)
@@ -109,7 +112,7 @@ class CohereLLMProvider(LLMProvider):
 
     def get_payload_extractor(self) -> FunctionPayloadExtractor:
         # See https://docs.cohere.com/docs/tool-use for more information.
-        return GenericPayloadExtractor(arguments_field_name="parameters")
+        return DefaultRecursivePayloadExtractor(arguments_field_name="parameters")
 
     def get_schema_converter(self, openapi_spec: OpenAPISpecification) -> OpenAPISpecificationConverter:
         return CohereSchemaConverter(schema=openapi_spec)

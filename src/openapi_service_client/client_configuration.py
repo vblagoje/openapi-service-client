@@ -12,8 +12,7 @@ from openapi_service_client.config import (
     PassThroughAuthentication,
 )
 from openapi_service_client.http_client import AbstractHttpClient, RequestsHttpClient
-from openapi_service_client.providers import LLMProvider, OpenAILLMProvider
-from openapi_service_client.providers.payload_extractor import FunctionPayloadExtractor
+from openapi_service_client.providers import FunctionPayloadExtractor, LLMProvider, OpenAILLMProvider
 from openapi_service_client.spec import OpenAPISpecification
 
 

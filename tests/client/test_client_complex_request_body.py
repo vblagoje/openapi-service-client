@@ -43,7 +43,7 @@ def create_order_app() -> FastAPI:
             status="CREATED",
             totalAmount=total_amount,
         )
-        return JSONResponse(content=response.dict(), status_code=201)
+        return JSONResponse(content=response.model_dump(), status_code=201)
 
     return app
 

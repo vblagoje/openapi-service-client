@@ -1,12 +1,10 @@
 import dataclasses
 import json
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Optional, Protocol, Union
 
 
-class FunctionPayloadExtractor(ABC):
+class FunctionPayloadExtractor(Protocol):
 
-    @abstractmethod
     def extract_function_invocation(self, payload: Any) -> Dict[str, Any]:
         """
         Extracts the function name and arguments from the LLM generated function call payload.
@@ -22,42 +20,19 @@ class FunctionPayloadExtractor(ABC):
         """
         pass
 
-    @abstractmethod
-    def required_fields(self) -> List[str]:
-        """
-        Returns a list of required fields that must be present in the function call payload.
-        :returns: A list of required fields to find in the function call payload.
-        """
-        pass
 
-    def search(self, payload: Any) -> Dict[str, Any]:
-        if self.is_pydantic(payload):
-            payload = payload.dict()
-        elif dataclasses.is_dataclass(payload):
-            payload = dataclasses.asdict(payload)
+class DefaultRecursivePayloadExtractor(FunctionPayloadExtractor):
+    """
+    Implements a recursive search for extracting function payloads from complex and nested data structures.
+    DefaultRecursivePayloadExtractor is designed to handle payloads that are dictionaries or lists by recursively
+    searching for and extracting necessary fields as specified in the required_fields method.
 
-        if isinstance(payload, dict):
-            if all(field in payload for field in self.required_fields()):
-                return payload
-            for _, value in payload.items():
-                result = self.search(value)
-                if result:
-                    return result
+    When encountering a non-dictionary or non-list payload, the extractor will attempt to convert the payload to a
+    dictionary using the get_dict_converter method. If the payload is successfully converted, the extractor will
+    continue the recursive search in the converted dictionary. This allows the extractor to handle payloads that are
+    instances of dataclasses or other objects that can be converted to dictionaries (e.g. Pydantic models).
+    """
 
-        elif isinstance(payload, list):
-            for item in payload:
-                result = self.search(item)
-                if result:
-                    return result
-
-        return {}
-
-    def is_pydantic(self, obj: Any) -> bool:
-        # pydantic v1 and v2 models have a dict method that can be used to convert the model to a dictionary
-        return hasattr(obj, "dict") and callable(obj.dict)
-
-
-class GenericPayloadExtractor(FunctionPayloadExtractor):
     def __init__(self, arguments_field_name: str):
         self.arguments_field_name = arguments_field_name
 
@@ -77,3 +52,41 @@ class GenericPayloadExtractor(FunctionPayloadExtractor):
 
     def required_fields(self) -> List[str]:
         return ["name", self.arguments_field_name]
+
+    def search(self, payload: Any) -> Dict[str, Any]:
+        if self.is_primitive(payload):
+            return {}
+
+        if dict_converter := self.get_dict_converter(payload):
+            payload = dict_converter()
+        elif dataclasses.is_dataclass(payload):
+            payload = dataclasses.asdict(payload)
+
+        if isinstance(payload, dict):
+            if all(field in payload for field in self.required_fields()):
+                # this is the payload we are looking for
+                return payload
+            for _, value in payload.items():
+                result = self.search(value)
+                if result:
+                    return result
+
+        elif isinstance(payload, list):
+            for item in payload:
+                result = self.search(item)
+                if result:
+                    return result
+
+        return {}
+
+    def get_dict_converter(
+        self, obj: Any, method_names: Optional[List[str]] = None
+    ) -> Union[Callable[[], Dict[str, Any]], None]:
+        method_names = method_names or ["model_dump", "dict"]  # search for pydantic v2 then v1
+        for attr in method_names:
+            if hasattr(obj, attr) and callable(getattr(obj, attr)):
+                return getattr(obj, attr)
+        return None
+
+    def is_primitive(self, obj) -> bool:
+        return isinstance(obj, (int, float, str, bool, type(None)))

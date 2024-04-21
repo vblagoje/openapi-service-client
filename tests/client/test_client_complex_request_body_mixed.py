@@ -43,7 +43,7 @@ def create_payment_app() -> FastAPI:
         response = PaymentResponse(
             transaction_id="TRANS-12345", status="SUCCESS", message="Payment processed successfully."
         )
-        return JSONResponse(content=response.dict(), status_code=200)
+        return JSONResponse(content=response.model_dump(), status_code=200)
 
     return app
 

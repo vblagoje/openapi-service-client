@@ -26,10 +26,9 @@ class TestClientLiveOpenAPI:
             tools=[{"type": "function", "function": tool_choice[0]}],
             tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
         )
-        tool_payloads = response.choices[0].message.tool_calls
         serper_api = OpenAPIServiceClient(config)
-        response = serper_api.invoke(tool_payloads[0].to_dict())
-        assert "inventions" in str(response)
+        service_response = serper_api.invoke(response)
+        assert "inventions" in str(service_response)
 
     @pytest.mark.skipif("OPENAI_API_KEY" not in os.environ, reason="OPENAI_API_KEY not set")
     def test_github(self, test_files_path):
@@ -50,7 +49,6 @@ class TestClientLiveOpenAPI:
             tools=[{"type": "function", "function": tool_choice[0]}],
             tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
         )
-        tool_payloads = response.choices[0].message.tool_calls
         serper_api = OpenAPIServiceClient(config)
-        response = serper_api.invoke(tool_payloads[0].to_dict())
-        assert "deepset" in str(response)
+        service_response = serper_api.invoke(response)
+        assert "deepset" in str(service_response)
