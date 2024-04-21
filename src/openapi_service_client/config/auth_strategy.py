@@ -1,9 +1,8 @@
-from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Protocol, runtime_checkable
 
 
-class AuthenticationStrategy(ABC):
-    @abstractmethod
+@runtime_checkable
+class AuthenticationStrategy(Protocol):
     def apply_auth(self, security_scheme: Dict[str, Any], request: Dict[str, Any]):
         pass
 
