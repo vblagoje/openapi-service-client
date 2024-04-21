@@ -54,6 +54,9 @@ class DefaultRecursivePayloadExtractor(FunctionPayloadExtractor):
         return ["name", self.arguments_field_name]
 
     def search(self, payload: Any) -> Dict[str, Any]:
+        if self.is_primitive(payload):
+            return {}
+
         if dict_converter := self.get_dict_converter(payload):
             payload = dict_converter()
         elif dataclasses.is_dataclass(payload):
@@ -61,6 +64,7 @@ class DefaultRecursivePayloadExtractor(FunctionPayloadExtractor):
 
         if isinstance(payload, dict):
             if all(field in payload for field in self.required_fields()):
+                # this is the payload we are looking for
                 return payload
             for _, value in payload.items():
                 result = self.search(value)
@@ -83,3 +87,6 @@ class DefaultRecursivePayloadExtractor(FunctionPayloadExtractor):
             if hasattr(obj, attr) and callable(getattr(obj, attr)):
                 return getattr(obj, attr)
         return None
+
+    def is_primitive(self, obj) -> bool:
+        return isinstance(obj, (int, float, str, bool, type(None)))
