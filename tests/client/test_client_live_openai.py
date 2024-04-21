@@ -19,16 +19,21 @@ class TestClientLiveOpenAPI:
             .build()
         )
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        tool_choice = config.get_tools_definitions()
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
-            tools=[{"type": "function", "function": tool_choice[0]}],
-            tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
+            messages=[{"role": "user", "content": "Do a serperdev google search: Who was Nikola Tesla?"}],
+            tools=config.get_tools_definitions(),
         )
         serper_api = OpenAPIServiceClient(config)
         service_response = serper_api.invoke(response)
         assert "inventions" in str(service_response)
+
+        # make a few more requests to test the same tool
+        service_response = serper_api.invoke(response)
+        assert "Serbian" in str(service_response)
+
+        service_response = serper_api.invoke(response)
+        assert "American" in str(service_response)
 
     @pytest.mark.skipif("OPENAI_API_KEY" not in os.environ, reason="OPENAI_API_KEY not set")
     def test_github(self, test_files_path):
@@ -36,7 +41,6 @@ class TestClientLiveOpenAPI:
         config = builder.with_openapi_spec(test_files_path / "github_compare.yml").build()
 
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        tool_choice = config.get_tools_definitions()
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -46,8 +50,7 @@ class TestClientLiveOpenAPI:
                     " haystack and owner deepset-ai",
                 }
             ],
-            tools=[{"type": "function", "function": tool_choice[0]}],
-            tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
+            tools=config.get_tools_definitions(),
         )
         serper_api = OpenAPIServiceClient(config)
         service_response = serper_api.invoke(response)

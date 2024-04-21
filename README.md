@@ -9,11 +9,11 @@ OpenAPI Service Client is a Python library that enables effortless integration b
 
 The OpenAPI Service Client library aims to simplify the process of invoking OpenAPI-defined services using function-calling payloads from various LLM providers. By abstracting away the complexities of making HTTP requests, handling authentication, preparing invocation payloads, and processing responses, it allows users to easily invoke underlying services with LLM-generated function calls.
 
-The library supports multiple LLM providers, including OpenAI, Anthropic, and Cohere. Each LLM provider uses a unique function-calling schema definition format; OpenAPI Service Client abstracts these differences, enabling a uniform approach to service invocation. Additionally, the library provides a flexible and extensible architecture that allows users to add support for additional LLM providers and function-calling formats.
+The library works with several LLM providers, including OpenAI, Anthropic, and Cohere. It uses a common method, `config.get_tools_definitions()`, to manage each provider's unique way of defining function calls. Similarly, differences in how these providers output function calls are handled uniformly through the `LLMProvider` and its `FunctionPayloadExtractor`. Additionally, the library's flexible and extensible design allows users to easily add support for more LLM providers and function-calling formats.
 
 ## Features
 
-- **Seamless LLM Integration**: Easily integrate with LLM-generated function calls for various providers, including OpenAI, Anthropic, and Cohere.
+- **Plug-and-Play LLM Integration**: Easily integrate with LLM-generated function calls for various providers, including OpenAI, Anthropic, and Cohere.
 - **OpenAPI Compliance**: Automatically handle REST service invocations and support various authentication strategies (API key, HTTP authentication, OAuth2).
 - **Customizable and Extensible**: Offers flexible configuration options and an extensible architecture to accommodate additional LLM providers and function-calling formats.
 
@@ -51,21 +51,21 @@ config = (
     .build()
 )
 
-# Initialize the OpenAPIServiceClient with configuration
-serper_api = OpenAPIServiceClient(config)
-
-# Setup the OpenAI API client and send the chat message
+# Setup the OpenAI API client...
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-tool_choice = config.get_tools_definitions()
+
+# and send the chat message to create a function-calling response completion
 response = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
-    tools=[{"type": "function", "function": tool_choice[0]}],
-    tool_choice={"type": "function", "function": {"name": tool_choice[0]["name"]}},
+    tools=config.get_tools_definitions()
 )
 
+# Initialize the OpenAPIServiceClient with configuration
+serper_api = OpenAPIServiceClient(config)
+
 # Simply pass the LLM response and invoke the service
-# The function-calling payload is extracted and processed automatically
+# The LLM specific function-calling payload is extracted and processed automatically
 service_response = serper_api.invoke(response)
 print(service_response)
 ```
@@ -95,13 +95,10 @@ config = (
     .build()
 )
 
-# Initialize the OpenAPIServiceClient with configuration
-serper_api = OpenAPIServiceClient(config)
-
-# Setup the Anthropic API client and send the chat message
+# Setup the Anthropic API client
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-# Create a message request using the Anthropic API client
+# and send the chat message to create a function-calling response completion
 response = client.beta.tools.messages.create(
     model="claude-3-opus-20240229",
     max_tokens=1024,
@@ -109,8 +106,11 @@ response = client.beta.tools.messages.create(
     messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
 )
 
+# Initialize the OpenAPIServiceClient with configuration
+serper_api = OpenAPIServiceClient(config)
+
 # Simply pass the LLM response and invoke the service
-# The function-calling payload is extracted and processed automatically
+# The LLM specific function-calling payload is extracted and processed automatically
 service_response = serper_api.invoke(response)
 print(service_response)
 ```
@@ -139,13 +139,10 @@ config = (
     .build()
 )
 
-# Initialize the OpenAPIServiceClient with configuration
-serper_api = OpenAPIServiceClient(config)
-
-# Setup the Cohere client 
+# Setup the Cohere client...
 client = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
 
-# And send the chat message
+# and send the chat message to create a function-calling response completion
 response = client.chat(
     model="command-r",
     preamble="A preamble aka system prompt goes here.",
@@ -153,8 +150,12 @@ response = client.chat(
     message="Do a google search: Who was Nikola Tesla?",
 )
 
+# Initialize the OpenAPIServiceClient with configuration
+serper_api = OpenAPIServiceClient(config)
+
+
 # Simply pass the LLM response and invoke the service
-# The function-calling payload is extracted and processed automatically
+# The LLM specific function-calling payload is extracted and processed automatically
 service_response = serper_api.invoke(response)
 print(service_response)
 ```
