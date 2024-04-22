@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 class OpenAPISpecification:
     def __init__(self, spec_dict: Dict[str, Any]):
+        if not isinstance(spec_dict, Dict):
+            raise ValueError(f"Invalid OpenAPI specification, expected a dictionary: {spec_dict}")
+
+        # just a crude sanity check, by no means a full validation
         if "openapi" not in spec_dict or "paths" not in spec_dict or "servers" not in spec_dict:
             raise ValueError(
                 "Invalid OpenAPI specification format. See https://swagger.io/specification/ for details.", spec_dict
@@ -52,6 +56,9 @@ class OpenAPISpecification:
         except requests.RequestException as e:
             raise ConnectionError(f"Failed to fetch the specification from URL: {url}. {e!s}") from e
         return cls.from_str(content)
+
+    def get_name(self) -> str:
+        return self.spec_dict.get("info", {}).get("title", "")
 
     def get_paths(self) -> Dict[str, Dict[str, Any]]:
         return self.spec_dict.get("paths", {})
