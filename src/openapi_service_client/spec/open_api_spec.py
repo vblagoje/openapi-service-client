@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+import jsonref
 import requests
 import yaml
 
@@ -14,22 +15,19 @@ logger = logging.getLogger(__name__)
 
 class OpenAPISpecification:
     def __init__(self, spec_dict: Dict[str, Any]):
+        if "openapi" not in spec_dict or "paths" not in spec_dict or "servers" not in spec_dict:
+            raise ValueError(
+                "Invalid OpenAPI specification format. See https://swagger.io/specification/ for details.", spec_dict
+            )
         self.spec_dict = spec_dict
 
     @classmethod
     def from_dict(cls, spec_dict: Dict[str, Any]) -> "OpenAPISpecification":
-        parser = cls({})
-        parser.spec_dict = spec_dict
+        parser = cls(spec_dict)
         return parser
 
     @classmethod
     def from_str(cls, content: str) -> "OpenAPISpecification":
-        if not isinstance(content, str):
-            raise ValueError(f"Invalid schema {content}. Provide a valid OpenAPI schema.")
-        if "openapi" not in content or "paths" not in content or "servers" not in content:
-            raise ValueError(
-                "Invalid OpenAPI specification format. See https://swagger.io/specification/ for details.", content
-            )
         try:
             loaded_spec = json.loads(content)
         except json.JSONDecodeError:
@@ -99,3 +97,16 @@ class OpenAPISpecification:
     def get_security_schemes(self) -> Dict[str, Dict[str, Any]]:
         components = self.spec_dict.get("components", {})
         return components.get("securitySchemes", {})
+
+    def to_dict(self, *, resolve_references: Optional[bool] = False) -> Dict[str, Any]:
+        """
+        Converts the OpenAPI specification to a dictionary format. Optionally resolves
+        all $ref references within the spec, returning a fully resolved specification
+        dictionary if `resolve_references` is set to True.
+
+        :param resolve_references: If True, resolve references in the specification.
+        :return: A dictionary representation of the OpenAPI specification, optionally fully resolved.
+        """
+        if resolve_references:
+            return jsonref.replace_refs(self.spec_dict, proxies=False)
+        return self.spec_dict
