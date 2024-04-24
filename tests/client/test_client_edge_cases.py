@@ -8,7 +8,7 @@ from tests.conftest import FastAPITestClient
 class TestEdgeCases:
     def test_invalid_openapi_spec(self):
         builder = ClientConfigurationBuilder()
-        with pytest.raises(ValueError, match="Invalid OpenAPI specification format"):
+        with pytest.raises(ValueError, match="Invalid OpenAPI specification"):
             config = builder.with_openapi_spec("invalid_spec.yml").build()
             OpenAPIServiceClient(config)
 

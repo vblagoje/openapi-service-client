@@ -16,12 +16,17 @@ VALID_HTTP_METHODS = [
 ]
 
 
-class AbstractHttpClient(Protocol):
+class HttpClient(Protocol):
     def send_request(self, request: Dict[str, Any]) -> Any:
+        """
+        Send an HTTP request and return the response.
+        :param request: a dictionary containing the request details.
+        :return: the response from the HTTP request.
+        """
         pass
 
 
-class RequestsHttpClient(AbstractHttpClient):
+class RequestsHttpClient(HttpClient):
     def __init__(self, config: Optional[HttpClientConfig] = None):
         self.config = config or HttpClientConfig()
         self.session = requests.Session()

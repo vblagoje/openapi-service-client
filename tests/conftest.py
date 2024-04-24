@@ -5,7 +5,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from openapi_service_client.http_client import AbstractHttpClient, HttpClientError
+from openapi_service_client.http_client import HttpClient, HttpClientError
 
 
 @pytest.fixture()
@@ -13,7 +13,7 @@ def test_files_path():
     return Path(__file__).parent / "test_files"
 
 
-class FastAPITestClient(AbstractHttpClient):
+class FastAPITestClient(HttpClient):
 
     def __init__(self, app: FastAPI):
         self.app = app
