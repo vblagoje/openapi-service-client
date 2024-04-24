@@ -4,6 +4,11 @@ from typing import Any, Callable, Dict, List, Optional, Protocol, Union
 
 
 class FunctionPayloadExtractor(Protocol):
+    """
+    FunctionPayloadExtractor specifies the interface for extracting function-calling payloads from LLM
+    generated completions. Implementations of FunctionPayloadExtractor should be able to extract function names and
+    arguments from LLM generated function calling completions/payloads.
+    """
 
     def extract_function_invocation(self, payload: Any) -> Dict[str, Any]:
         """
@@ -21,10 +26,10 @@ class FunctionPayloadExtractor(Protocol):
         pass
 
 
-class DefaultRecursivePayloadExtractor(FunctionPayloadExtractor):
+class DefaultPayloadExtractor(FunctionPayloadExtractor):
     """
     Implements a recursive search for extracting function payloads from complex and nested data structures.
-    DefaultRecursivePayloadExtractor is designed to handle payloads that are dictionaries or lists by recursively
+    DefaultPayloadExtractor is designed to handle payloads that are dictionaries or lists by recursively
     searching for and extracting necessary fields as specified in the required_fields method.
 
     When encountering a non-dictionary or non-list payload, the extractor will attempt to convert the payload to a

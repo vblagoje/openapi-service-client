@@ -1,6 +1,6 @@
 import pytest
 
-from openapi_service_client.providers.openai import OpenAISchemaConverter
+from openapi_service_client.providers.openai import OpenAIConverter
 from openapi_service_client.spec import OpenAPISpecification
 
 
@@ -10,9 +10,9 @@ class TestOpenAPISchemaConversion:
     def test_serperdev(self, test_files_path, provider):
         spec = OpenAPISpecification.from_file(test_files_path / "serper.yaml")
         converter = (
-            OpenAISchemaConverter(schema=spec)
+            OpenAIConverter(schema=spec)
             if provider == "openai"
-            else OpenAISchemaConverter(schema=spec, parameters_name="input_schema")  # anthropic is using input_schema
+            else OpenAIConverter(schema=spec, parameters_name="input_schema")  # anthropic is using input_schema
         )
         functions = converter.convert()
         assert functions
@@ -31,9 +31,9 @@ class TestOpenAPISchemaConversion:
     def test_github(self, test_files_path, provider: str):
         spec = OpenAPISpecification.from_file(test_files_path / "github_compare.yml")
         converter = (
-            OpenAISchemaConverter(schema=spec)
+            OpenAIConverter(schema=spec)
             if provider == "openai"
-            else OpenAISchemaConverter(schema=spec, parameters_name="input_schema")  # anthropic is using input_schema
+            else OpenAIConverter(schema=spec, parameters_name="input_schema")  # anthropic is using input_schema
         )
         functions = converter.convert()
         assert functions
@@ -67,9 +67,9 @@ class TestOpenAPISchemaConversion:
     def test_complex_types(self, test_files_path, provider: str):
         spec = OpenAPISpecification.from_file(test_files_path / "complex_types_openapi_service.json")
         converter = (
-            OpenAISchemaConverter(schema=spec)
+            OpenAIConverter(schema=spec)
             if provider == "openai"
-            else OpenAISchemaConverter(schema=spec, parameters_name="input_schema")  # anthropic is using input_schema
+            else OpenAIConverter(schema=spec, parameters_name="input_schema")  # anthropic is using input_schema
         )
         functions = converter.convert()
         assert functions
