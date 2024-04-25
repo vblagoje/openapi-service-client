@@ -24,15 +24,15 @@ class TestClientLiveOpenAPI:
             messages=[{"role": "user", "content": "Do a serperdev google search: Who was Nikola Tesla?"}],
             tools=config.get_tools_definitions(),
         )
-        serper_api = OpenAPIServiceClient(config)
-        service_response = serper_api.invoke(response)
+        service_api = OpenAPIServiceClient(config)
+        service_response = service_api.invoke(response)
         assert "inventions" in str(service_response)
 
         # make a few more requests to test the same tool
-        service_response = serper_api.invoke(response)
+        service_response = service_api.invoke(response)
         assert "Serbian" in str(service_response)
 
-        service_response = serper_api.invoke(response)
+        service_response = service_api.invoke(response)
         assert "American" in str(service_response)
 
     @pytest.mark.skipif("OPENAI_API_KEY" not in os.environ, reason="OPENAI_API_KEY not set")
@@ -52,8 +52,8 @@ class TestClientLiveOpenAPI:
             ],
             tools=config.get_tools_definitions(),
         )
-        serper_api = OpenAPIServiceClient(config)
-        service_response = serper_api.invoke(response)
+        service_api = OpenAPIServiceClient(config)
+        service_response = service_api.invoke(response)
         assert "deepset" in str(service_response)
 
     @pytest.mark.skipif("FIRECRAWL_API_KEY" not in os.environ, reason="FIRECRAWL_API_KEY not set")
@@ -69,8 +69,8 @@ class TestClientLiveOpenAPI:
             messages=[{"role": "user", "content": "Scrape URL: https://news.ycombinator.com/"}],
             tools=config.get_tools_definitions(),
         )
-        serper_api = OpenAPIServiceClient(config)
-        service_response = serper_api.invoke(response)
+        service_api = OpenAPIServiceClient(config)
+        service_response = service_api.invoke(response)
         assert isinstance(service_response, dict)
         assert service_response.get("success", False), "Firecrawl scrape API call failed"
 
@@ -86,7 +86,7 @@ class TestClientLiveOpenAPI:
             ],
             tools=config.get_tools_definitions(),
         )
-        service_response = serper_api.invoke(response)
+        service_response = service_api.invoke(response)
         assert isinstance(service_response, dict)
         assert service_response.get("success", False), "Firecrawl search API call failed"
         assert len(service_response.get("data", [])) == top_k

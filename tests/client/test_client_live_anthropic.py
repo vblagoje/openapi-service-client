@@ -28,15 +28,15 @@ class TestClientLiveAnthropic:
             tools=[tool_choice[0]],
             messages=[{"role": "user", "content": "Do a google search: Who was Nikola Tesla?"}],
         )
-        serper_api = OpenAPIServiceClient(config)
-        service_response = serper_api.invoke(response)
+        service_api = OpenAPIServiceClient(config)
+        service_response = service_api.invoke(response)
         assert "inventions" in str(service_response)
 
         # make a few more requests to test the same tool
-        service_response = serper_api.invoke(response)
+        service_response = service_api.invoke(response)
         assert "Serbian" in str(service_response)
 
-        service_response = serper_api.invoke(response)
+        service_response = service_api.invoke(response)
         assert "American" in str(service_response)
 
     @pytest.mark.skipif("ANTHROPIC_API_KEY" not in os.environ, reason="ANTHROPIC_API_KEY not set")
@@ -62,6 +62,6 @@ class TestClientLiveAnthropic:
                 }
             ],
         )
-        serper_api = OpenAPIServiceClient(config)
-        service_response = serper_api.invoke(response)
+        service_api = OpenAPIServiceClient(config)
+        service_response = service_api.invoke(response)
         assert "deepset" in str(service_response)
