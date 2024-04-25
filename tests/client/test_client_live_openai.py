@@ -73,3 +73,21 @@ class TestClientLiveOpenAPI:
         service_response = serper_api.invoke(response)
         assert isinstance(service_response, dict)
         assert service_response.get("success", False), "Firecrawl scrape API call failed"
+
+        # now test the same openapi service but different endpoint/tool
+        top_k = 2
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Search Google for `Why was Sam Altman ousted from OpenAI?`, limit to {top_k} results",
+                }
+            ],
+            tools=config.get_tools_definitions(),
+        )
+        service_response = serper_api.invoke(response)
+        assert isinstance(service_response, dict)
+        assert service_response.get("success", False), "Firecrawl search API call failed"
+        assert len(service_response.get("data", [])) == top_k
+        assert "Sam" in str(service_response)
