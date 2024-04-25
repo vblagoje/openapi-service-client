@@ -75,4 +75,6 @@ class OAuthAuthentication(AuthenticationStrategy):
 class HttpClientConfig:
     timeout: int = 10
     max_retries: int = 3
+    backoff_factor: float = 0.3
+    retry_on_status: set = field(default_factory=lambda: {500, 502, 503, 504})
     default_headers: Dict[str, str] = field(default_factory=dict)
