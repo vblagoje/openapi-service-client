@@ -55,3 +55,21 @@ class TestClientLiveOpenAPI:
         serper_api = OpenAPIServiceClient(config)
         service_response = serper_api.invoke(response)
         assert "deepset" in str(service_response)
+
+    @pytest.mark.skipif("FIRECRAWL_API_KEY" not in os.environ, reason="FIRECRAWL_API_KEY not set")
+    @pytest.mark.skipif("OPENAI_API_KEY" not in os.environ, reason="OPENAI_API_KEY not set")
+    def test_firecrawl(self):
+        openapi_spec_url = "https://raw.githubusercontent.com/mendableai/firecrawl/main/apps/api/openapi.json"
+        builder = ClientConfigurationBuilder()
+        config = builder.with_openapi_spec(openapi_spec_url).with_credentials(os.getenv("FIRECRAWL_API_KEY")).build()
+
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": "Scrape URL: https://news.ycombinator.com/"}],
+            tools=config.get_tools_definitions(),
+        )
+        serper_api = OpenAPIServiceClient(config)
+        service_response = serper_api.invoke(response)
+        assert isinstance(service_response, dict)
+        assert service_response.get("success", False), "Firecrawl scrape API call failed"
