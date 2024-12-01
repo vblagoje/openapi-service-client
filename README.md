@@ -1,3 +1,4 @@
+# Superseded by https://github.com/vblagoje/openapi-llm/
 # OpenAPI Service Client
 [![PyPI - Version](https://img.shields.io/pypi/v/openapi-service-client.svg)](https://pypi.org/project/openapi-service-client)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/openapi-service-client.svg)](https://pypi.org/project/openapi-service-client)
